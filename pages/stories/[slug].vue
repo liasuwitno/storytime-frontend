@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <LayoutsCommonLayout container="lg">
     <div :class="cn('pt-24')">
       <section class="block">
@@ -149,4 +149,12 @@ const handleImageClick = (clickedIndex: number): void => {
 
   MOCK_IMAGES.value = newImages;
 };
+</script> -->
+
+<template lang="">
+  <div>{{ route.params.slug ?? "-" }}</div>
+</template>
+<script setup lang="ts">
+const route = useRoute();
 </script>
+<style lang=""></style>

@@ -12,6 +12,7 @@ const props = defineProps<{
   iconLeft?: any;
   iconRight?: any;
 
+  name?: string;
   hasLabel?: boolean;
   isRequired?: boolean;
   label?: string;
@@ -25,7 +26,7 @@ const emits = defineEmits<{
 
 const modelValue = useVModel(props, "modelValue", emits, {
   passive: true,
-  defaultValue: props.defaultValue,
+  defaultValue: props.defaultValue ?? "",
 });
 
 const showPassword = ref(false);
@@ -33,12 +34,14 @@ const showPassword = ref(false);
 const togglePassword = (): void => {
   showPassword.value = !showPassword.value;
 };
+
+const inputType = computed(() => props.type || "text");
 </script>
 
 <template>
   <div :class="cn('form-control space-y-2', props.wrapperClassName)">
     <UiFormLabel v-if="props.hasLabel" class="text-quartz">
-      {{ label }}
+      {{ props.label }}
     </UiFormLabel>
 
     <div class="relative">
@@ -51,6 +54,7 @@ const togglePassword = (): void => {
       </template>
 
       <input
+        :name="props.name"
         v-model="modelValue"
         :class="
           cn(
@@ -60,7 +64,7 @@ const togglePassword = (): void => {
         "
         :placeholder="props.placeholder"
         :type="
-          props.hasPassword ? (showPassword ? 'text' : 'password') : props.type
+          props.hasPassword ? (showPassword ? 'text' : 'password') : inputType
         "
         :required="props.isRequired"
       />

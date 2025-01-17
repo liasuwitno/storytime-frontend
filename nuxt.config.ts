@@ -7,17 +7,23 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      NUXT_PUBLIC_API_BASE: process.env.NUXT_PUBLIC_API_BASE,
+      NUXT_PUBLIC_API_BASE_DEV: process.env.NUXT_API_BASE_DEV,
+      NUXT_PUBLIC_API_BASE_PROD: process.env.NUXT_API_BASE_PROD,
+      NUXT_API_ENV: process.env.NUXT_API_ENV,
     },
   },
   build: {
     transpile: ["pinia"],
   },
-  devServer: {
-    port: 3290,
-  },
+  plugins: ["~/plugins/request"],
   modules: ["@pinia/nuxt", "@nuxt/image"],
   css: ["~/styles/globals.css"],
+  pinia: {
+    storesDirs: ["~/store/**"],
+  },
+  devServer: {
+    port: 3890,
+  },
   postcss: {
     plugins: {
       tailwindcss: {},

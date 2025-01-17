@@ -26,7 +26,7 @@
       <UiInput
         type="text"
         placeholder="Search Story"
-        :class="cn('py-6 px-4 font-medium text-sm')"
+        :inputClass="cn('py-6 px-4 font-medium text-sm')"
         :iconRight="Search"
       />
     </div>

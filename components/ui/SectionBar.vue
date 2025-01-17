@@ -1,26 +1,23 @@
 <template>
   <div
     :class="
-      cn('flex items-center pb-6 mb-2 border-b border-[#CCCCCC]', {
-        'justify-between': props.isShowExploreMore,
-        'justify-start': !props.isShowExploreMore,
-      })
+      cn(
+        'flex items-center justify-between w-full pb-6 mb-2 border-b border-[#CCCCCC]'
+      )
     "
   >
-    <div>
-      <h4
-        :class="
-          cn(
-            'font-mono text-3xl font-bold tracking-tight text-raisin-black',
-            'md:text-4xl'
-          )
-        "
-      >
-        {{ props.title || "" }}
-      </h4>
-    </div>
+    <h4
+      :class="
+        cn(
+          'font-mono text-3xl font-bold tracking-tight text-raisin-black',
+          'md:text-4xl'
+        )
+      "
+    >
+      {{ props.title || "" }}
+    </h4>
 
-    <div v-if="props.isShowExploreMore" class="self-end">
+    <div v-if="props.isShowExploreMore">
       <RouterLink
         :to="props.redirectLink || '/'"
         :class="

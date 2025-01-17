@@ -10,16 +10,16 @@
     Create Account
   </h2>
 
-  <div :class="cn('flex flex-col space-y-5', $attrs.class ?? '')">
-    <form @submit="onSubmit">
+  <div :class="cn('flex flex-col space-y-5 select-none', $attrs.class ?? '')">
+    <Form method="post" @submit="onSubmit">
       <UiInput
         hasLabel
         type="text"
         label="Name"
         placeholder="Enter your name"
-        :inputClass="cn('py-6 font-medium')"
+        :inputClass="cn('py-6 font-medium text-base')"
         :wrapperClassName="cn('mb-6')"
-        :modelValue="formData.name"
+        v-model="formData.fullname"
         isRequired
       />
 
@@ -28,9 +28,9 @@
         type="text"
         label="Username"
         placeholder="Enter your username"
-        :inputClass="cn('py-6 font-medium')"
+        :inputClass="cn('py-6 font-medium text-base')"
         :wrapperClassName="cn('mb-6')"
-        :modelValue="formData.username"
+        v-model="formData.username"
         isRequired
       />
 
@@ -39,9 +39,9 @@
         type="email"
         label="Email"
         placeholder="Enter your email"
-        :inputClass="cn('py-6 font-medium')"
+        :inputClass="cn('py-6 font-medium text-base')"
         :wrapperClassName="cn('mb-6')"
-        :modelValue="formData.email"
+        v-model="formData.email"
         isRequired
       />
 
@@ -50,9 +50,9 @@
         hasPassword
         label="Password"
         placeholder="Enter your chosen password"
-        :inputClass="cn('py-6 font-medium')"
+        :inputClass="cn('py-6 font-medium text-base')"
         :wrapperClassName="cn('mb-6')"
-        :modelValue="formData.password"
+        v-model="formData.password"
         isRequired
       />
 
@@ -61,15 +61,15 @@
         hasPassword
         label="Confirm Password"
         placeholder="Re-enter your chosen password"
-        :inputClass="cn('py-6 font-medium')"
+        :inputClass="cn('py-6 font-medium text-base')"
         :wrapperClassName="cn('mb-6')"
-        :modelValue="formData.confirmPassword"
+        v-model="formData.confirmPassword"
         isRequired
       />
 
       <div class="grid gap-2">
         <UiButton
-          type="button"
+          type="submit"
           size="default"
           variant="default"
           :class="cn('bg-olive-drab h-12 text-base', 'hover:bg-olive-drab/90')"
@@ -77,7 +77,7 @@
           Create Account
         </UiButton>
       </div>
-    </form>
+    </Form>
 
     <div class="relative">
       <p>
@@ -94,25 +94,41 @@
 </template>
 
 <script setup lang="ts">
+import type { RegisterPayload } from "@/composables/services/useAuthService";
+
+import { Form } from "vee-validate";
+import * as z from "zod";
+
 import { ref, reactive } from "vue";
 
-import { Button } from "~/components/ui/button";
+const isLoading = ref(false);
 
 const formData = reactive({
-  name: "",
+  fullname: "",
   username: "",
   email: "",
   password: "",
   confirmPassword: "",
 });
 
-const isLoading = ref(false);
-async function onSubmit(event: Event) {
-  event.preventDefault();
-  isLoading.value = true;
+// const getPayloads = (): RegisterPayload => {
+//   return {
+//     fullname: formData.name,
+//     username: String(formData.username)?.toLowerCase(),
+//     email: String(formData.email)?.toLowerCase(),
+//     password: formData.password,
+//     password_confirmation: formData.confirmPassword,
+//   };
+// };
 
-  setTimeout(() => {
+const onSubmit = async (): Promise<void> => {
+  try {
+    isLoading.value = true;
+
     isLoading.value = false;
-  }, 3000);
-}
+  } catch (error) {
+    isLoading.value = false;
+    console.error({ error });
+  }
+};
 </script>

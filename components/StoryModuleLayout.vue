@@ -1,6 +1,7 @@
 <template>
   <Flicking
     :class="cn('flex items-center mt-4 mb-8', 'md:mt-6 md:mb-20')"
+    :hideBeforeInit="true"
     v-if="props.isSlider"
     :options="{
       align: 'prev',
@@ -10,15 +11,15 @@
     }"
   >
     <div
-      v-for="(story, index) in props.stories"
-      :key="story.id"
+      v-for="(story, index) in props.similarStories"
+      :key="story.title"
       :class="cn('mr-5 w-[340px]')"
     >
       <UiCardItem
         type="normal"
         :story="story"
         :variant="props.variant"
-        :url="`/stories/${story.id}`"
+        :url="`/stories/${story.slug}`"
         :index="index"
         :methods="{
           bookmarkOnClick: () => {},
@@ -33,7 +34,7 @@
   >
     <div
       v-for="(story, index) in props.stories"
-      :key="story.id"
+      :key="story.story_id"
       :class="
         cn('', {
           'col-span-2 row-span-2': index === 0 && props.variant === 'grid',
@@ -42,10 +43,11 @@
       "
     >
       <UiCardItem
+        isMultipleMethod
         type="normal"
         :story="story"
         :variant="props.variant"
-        :url="`/stories/${story.id}`"
+        :url="`/stories/${story.slug}`"
         :index="index"
         :methods="{
           bookmarkOnClick: () => {},
@@ -56,13 +58,17 @@
 </template>
 
 <script setup lang="ts">
+import type { StoryResponse } from "~/composables/services/useStoryService";
+
 import { cn } from "@/utils";
 import Flicking from "@egjs/vue3-flicking";
+
 import "@egjs/vue3-flicking/dist/flicking-inline.css";
 
 const props = defineProps<{
   isSlider?: boolean;
   variant: "list" | "grid";
-  stories: any[];
+  stories?: StoryResponse[];
+  similarStories?: StoryResponse[];
 }>();
 </script>

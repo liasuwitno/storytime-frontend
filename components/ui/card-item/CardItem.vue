@@ -1,5 +1,5 @@
 <template>
-  <div :class="cn('card flex flex-col justify-between cursor-pointer')">
+  <div :class="cn('card flex flex-col justify-between')">
     <figure class="relative group overflow-hidden rounded-lg">
       <UiButton
         v-if="isMultipleMethod"
@@ -8,7 +8,8 @@
         variant="default"
         :class="
           cn(
-            'bg-asparagus hover:bg-asparagus/90 absolute bottom-5 z-50 transform translate-y-full opacity-0 visibility-hidden group-hover:translate-y-0 group-hover:opacity-100 group-hover:visibility-visible transition-all duration-300',
+            'bg-asparagus hover:bg-asparagus/90 absolute bottom-5 z-50 transform translate-y-full opacity-0 visibility-hidden transition-all duration-300',
+            'group-hover:translate-y-0 group-hover:opacity-100 group-hover:visibility-visible',
             {
               'right-20': props.type === 'normal',
               'right-5': props.type !== 'normal',
@@ -26,7 +27,8 @@
         variant="default"
         :class="
           cn(
-            'bg-asparagus hover:bg-asparagus/90 absolute bottom-5 z-50 transform translate-y-full opacity-0 visibility-hidden group-hover:translate-y-0 group-hover:opacity-100 group-hover:visibility-visible transition-all duration-300',
+            'bg-asparagus hover:bg-asparagus/90 absolute bottom-5 z-50 transform translate-y-full opacity-0 visibility-hidden transition-all duration-300',
+            'group-hover:translate-y-0 group-hover:opacity-100 group-hover:visibility-visible',
             {
               'right-5': props.type === 'normal',
               'right-20': props.type !== 'normal',
@@ -45,7 +47,9 @@
         variant="default"
         :class="
           cn(
-            'bg-asparagus hover:bg-asparagus/90 absolute bottom-5 right-[140px] z-50 transform translate-y-full opacity-0 visibility-hidden group-hover:translate-y-0 group-hover:opacity-100 group-hover:visibility-visible transition-all duration-300'
+            'bg-asparagus hover:bg-asparagus/90 absolute bottom-5 right-[140px]',
+            'z-50 transform translate-y-full opacity-0 visibility-hidden transition-all duration-300',
+            'group-hover:translate-y-0 group-hover:opacity-100 group-hover:visibility-visible'
           )
         "
         @click="methods.updateOnClick || (() => {})"
@@ -54,8 +58,12 @@
       </UiButton>
 
       <NuxtImg
-        :src="story?.banner ?? ''"
-        :alt="story?.author_name ?? 'Image'"
+        :src="
+          story?.images?.length > 0
+            ? story?.images[0]?.url
+            : 'https://via.assets.so/img.jpg?w=800&h=400&tc=#cecece&bg=#cecece'
+        "
+        :alt="story?.title ?? 'Image'"
         :class="
           cn('w-full object-cover', {
             'h-[685px]': props.index === 0 && props.variant === 'grid',
@@ -70,27 +78,31 @@
       />
     </figure>
 
-    <div class="py-2">
+    <NuxtLink :to="props.url" class="py-2">
       <div class="content">
         <h3
           :class="
             cn(
               'text-lg font-bold tracking-tight underline-offset-4 mt-2.5 mb-4 line-clamp-1',
-              'md:text-2xl'
+              'md:text-2xl',
+              'hover:underline'
             )
           "
         >
           {{ story?.title ?? "-" }}
         </h3>
         <p :class="cn('text-sm line-clamp-3 text-gray-600 leading-normal')">
-          {{ story?.body ?? "-" }}
+          {{ story?.content ?? "-" }}
         </p>
       </div>
 
       <div class="grid grid-cols-2 gap-2 mt-3">
         <div class="flex items-center space-x-2 overflow-hidden">
           <NuxtImg
-            :src="story.avatar"
+            :src="
+              story?.author?.avatar ??
+              'https://via.assets.so/img.jpg?w=800&h=400&tc=#cecece&bg=#cecece'
+            "
             alt="Avatar"
             class="size-8 rounded-full"
           />
@@ -102,7 +114,7 @@
               )
             "
           >
-            {{ story.author_name }}
+            {{ story?.author?.name ?? "-" }}
           </p>
         </div>
 
@@ -121,28 +133,19 @@
           >
 
           <UiBadge v-if="hasCategory" class="capitalize">
-            {{ story.category_name }}
+            {{ story?.category_name ?? "-" }}
           </UiBadge>
         </div>
       </div>
-    </div>
+    </NuxtLink>
   </div>
 </template>
 <script setup lang="ts">
 import { Bookmark, Pencil, Trash2 } from "lucide-vue-next";
-
-interface CardItemProps {
-  title: string;
-  body: string;
-  banner: string;
-  category_name: string;
-  author_name: string;
-  avatar: string;
-  created_at: string;
-}
+import type { StoryResponse } from "~/composables/services/useStoryService";
 
 interface CardProps {
-  story: CardItemProps;
+  story: StoryResponse;
   type?: "normal" | "detail";
   variant: "list" | "grid";
   url: string;

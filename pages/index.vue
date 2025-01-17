@@ -2,37 +2,63 @@
   <LayoutsCommonLayout container="lg">
     <Hero />
 
-    <section>
-      <UiSectionBar
-        title="Latest Story"
-        redirectLink="/stories"
-        isShowExploreMore
-      />
-      <StoryModuleLayout :stories="MOCK_DATA" variant="list" isSlider />
-    </section>
+    <div v-if="!isLoading">
+      <section>
+        <UiSectionBar
+          title="Latest Story"
+          redirectLink="/stories"
+          isShowExploreMore
+        />
 
-    <section>
-      <UiSectionBar title="Comedy" redirectLink="/comedy" isShowExploreMore />
-      <StoryModuleLayout :stories="FIND_THREE_MOCK_DATA" variant="grid" />
-    </section>
+        <StoryModuleLayout
+          :similarStories="latestStory"
+          variant="list"
+          isSlider
+        />
+      </section>
 
-    <section>
-      <UiSectionBar title="Romance" redirectLink="/romance" isShowExploreMore />
+      <section v-for="(story, index) in stories" :key="story?.category_name">
+        <UiSectionBar
+          :title="story?.category_name ?? '-'"
+          redirectLink="/"
+          :isShowExploreMore="story?.stories?.length > 0"
+        />
+
+        <StoryModuleLayout
+          v-if="story?.stories?.length > 0"
+          :stories="story?.stories"
+          :variant="index % 2 ? 'grid' : 'list'"
+        />
+
+        <div v-else class="flex items center justify-center mt-8 py-10">
+          <p class="text-base font-medium text-raisin-black">
+            No stories found in this {{ story?.category_name ?? "category" }}
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <div v-else>
+      <div class="flex items-center justify-center py-10">Loading...</div>
+    </div>
+
+    <!-- <section>
+      <UiSectionBar title="Romance" redirectLink="/" isShowExploreMore />
       <StoryModuleLayout :stories="FIND_THREE_MOCK_DATA" variant="list" />
     </section>
 
     <section>
-      <UiSectionBar title="Horror" redirectLink="/horror" isShowExploreMore />
+      <UiSectionBar title="Horror" redirectLink="/" isShowExploreMore />
       <StoryModuleLayout :stories="FIND_THREE_MOCK_DATA" variant="grid" />
-    </section>
+    </section> -->
 
-    <section>
+    <!-- <section>
       <UiSectionBar title="More Categories" />
       <div class="relative flex items-center space-x-4 flex-wrap mt-8">
         <NuxtLink
           :key="category.id"
           v-for="category in CATEGORIES"
-          :to="`/categories/${category.id}`"
+          :to="`/`"
           :class="
             cn('bg-[#F0F5ED] px-8 py-7 rounded-md', 'hover:bg-[#F0F5ED]/50')
           "
@@ -42,8 +68,61 @@
           </p>
         </NuxtLink>
       </div>
-    </section>
+    </section> -->
   </LayoutsCommonLayout>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ref } from "vue";
+import { useStoryService } from "~/composables/services/useStoryService";
+
+import type {
+  LandingStoryResponse,
+  StoryResponse,
+} from "~/composables/services/useStoryService";
+
+const stories = ref<LandingStoryResponse[]>([]);
+const latestStory = ref<StoryResponse[]>([]);
+
+const isLoading = ref<boolean>(false);
+
+const { getLandingStories } = useStoryService();
+
+const getStories = async (): Promise<void> => {
+  try {
+    isLoading.value = true;
+
+    const response = await getLandingStories();
+
+    if (response?.code === CODE_OK) {
+      const storiesData = response.data as LandingStoryResponse[];
+
+      stories.value = storiesData;
+      latestStory.value = storiesData
+        ?.flatMap((story) =>
+          story.stories
+            ? story.stories.map((childStory) => ({
+                ...childStory,
+                category_name: story.category_name,
+              }))
+            : []
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        ) as StoryResponse[];
+
+      isLoading.value = false;
+    }
+
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    console.error({ error });
+  }
+};
+
+onMounted(async () => {
+  await getStories();
+});
+</script>

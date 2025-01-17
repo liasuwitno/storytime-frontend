@@ -2,6 +2,3 @@
   <div></div>
 </template>
 <script setup lang="ts"></script>
-<style lang=""></style>
-
-<!-- localhost:3000/stories/romance -->

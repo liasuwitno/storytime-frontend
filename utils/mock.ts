@@ -1,63 +1,64 @@
 export const MOCK_DATA = [
   {
-    id: 1,
-    title: "The Last of Us 1",
-    author_name: "John Doe",
-    created_at: new Date().toISOString(),
-    category_name: "horror",
-    avatar:
-      "https://dl.dropbox.com/scl/fi/xpzps77me2votw6y204ny/avatar-2.png?rlkey=fcr27tau2wffcugzlxq41bi26&st=82hsf9kj&dl=0",
-    body: "Seperti hari-hari biasa, aku bangun pagi, sarapan dan pergi ke stasuin untuk naik kereta dan berangkat kerja. Hari ini cukup lambat karena nampaknya kereta akan telat datang sekitar 10 menit. Aku dan orang-orang yang memiliki tujuan yang sama ini hanya menunggu di kursi sebelum kereta datang. 15 menit. Itulah waktu yang",
-    banner:
-      "https://images.unsplash.com/photo-1733970532531-c1eb5bbb165f?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    category_id: 1,
+    category_name: "Romance",
+    stories: [],
   },
   {
-    id: 2,
-    title: "The Last of Us 2",
-    author_name: "John Doe",
-    created_at: new Date().toISOString(),
-    category_name: "horror",
-    avatar:
-      "https://dl.dropbox.com/scl/fi/xpzps77me2votw6y204ny/avatar-2.png?rlkey=fcr27tau2wffcugzlxq41bi26&st=82hsf9kj&dl=0",
-    body: "Seperti hari-hari biasa, aku bangun pagi, sarapan dan pergi ke stasuin untuk naik kereta dan berangkat kerja. Hari ini cukup lambat karena nampaknya kereta akan telat datang sekitar 10 menit. Aku dan orang-orang yang memiliki tujuan yang sama ini hanya menunggu di kursi sebelum kereta datang. 15 menit. Itulah waktu yang",
-    banner:
-      "https://images.unsplash.com/photo-1733970532531-c1eb5bbb165f?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    category_id: 2,
+    category_name: "Thriller",
+    stories: [],
   },
   {
-    id: 3,
-    title: "The Last of Us 3",
-    author_name: "John Doe",
-    created_at: new Date().toISOString(),
-    category_name: "horror",
-    avatar:
-      "https://dl.dropbox.com/scl/fi/xpzps77me2votw6y204ny/avatar-2.png?rlkey=fcr27tau2wffcugzlxq41bi26&st=82hsf9kj&dl=0",
-    body: "Seperti hari-hari biasa, aku bangun pagi, sarapan dan pergi ke stasuin untuk naik kereta dan berangkat kerja. Hari ini cukup lambat karena nampaknya kereta akan telat datang sekitar 10 menit. Aku dan orang-orang yang memiliki tujuan yang sama ini hanya menunggu di kursi sebelum kereta datang. 15 menit. Itulah waktu yang",
-    banner:
-      "https://images.unsplash.com/photo-1733970532531-c1eb5bbb165f?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    category_id: 3,
+    category_name: "Horror",
+    stories: [
+      {
+        story_id: 8,
+        title: "Dede Inoen Pria Gagah Puncak Rantai Makanan",
+        author: {
+          name: "Kak Tegar",
+          avatar: null,
+        },
+        content:
+          "Dede Inoen, sang raja makan segala, suatu hari menemukan sebuah jamur aneh di hutan belantara. Jamur itu berkilau-kilau seperti emas dan mengeluarkan bau seperti pizza. Tanpa ragu, Dede melahap jamur itu bulat-bulat.Tak lama kemudian, tubuh Dede membesar menjadi sebesar gajah, namun tetap lincah seperti kucing. Rambutnya berubah menjadi akar pohon, dan dari mulutnya tumbuh bunga matahari raksasa. Dede pun berkeliling hutan dengan riang, menyapa hewan-hewan dengan bahasa bunga. Monyet-monyet hutan pun penasaran dan mendekatinya. Mereka meminta Dede untuk membuatkan mereka ayunan dari akar rambutnya. Dede dengan senang hati melakukannya. Namun, saat Dede mencoba membuatkan ayunan untuk seekor beruang, ayunannya malah putus dan beruang itu terjatuh ke sungai. Dede panik dan berusaha menyelamatkan beruang itu. Ia melompat ke sungai dan berubah menjadi ikan paus untuk mengangkat beruang itu. Beruang itu pun selamat, dan mereka semua tertawa terbahak-bahak. Namun, kegembiraan itu tak berlangsung lama. Tiba-tiba, dari dalam perut Dede muncul seekor kelinci raksasa yang kelaparan. Kelinci itu memakan semua bunga matahari di kepala Dede hingga habis. Dede pun kembali ke bentuk semula, merasa sedikit pusing. Sejak saat itu, Dede lebih berhati-hati dalam memilih makanan. Ia masih suka mencoba makanan-makanan aneh, tapi ia selalu memastikan bahwa makanan itu aman dikonsumsi dan tidak akan mengubahnya menjadi makhluk aneh lainnya.",
+        created_at: "2025-01-08T14:57:40+08:00",
+      },
+      {
+        story_id: 7,
+        title: "Dede Inoen si Puncak Rantai Makanan",
+        author: {
+          name: "Kak Tegar",
+          avatar: null,
+        },
+        content:
+          "Dede Inoen, sang raja makan segala, suatu hari menemukan sebuah jamur aneh di hutan belantara. Jamur itu berkilau-kilau seperti emas dan mengeluarkan bau seperti pizza. Tanpa ragu, Dede melahap jamur itu bulat-bulat.Tak lama kemudian, tubuh Dede membesar menjadi sebesar gajah, namun tetap lincah seperti kucing. Rambutnya berubah menjadi akar pohon, dan dari mulutnya tumbuh bunga matahari raksasa. Dede pun berkeliling hutan dengan riang, menyapa hewan-hewan dengan bahasa bunga. Monyet-monyet hutan pun penasaran dan mendekatinya. Mereka meminta Dede untuk membuatkan mereka ayunan dari akar rambutnya. Dede dengan senang hati melakukannya. Namun, saat Dede mencoba membuatkan ayunan untuk seekor beruang, ayunannya malah putus dan beruang itu terjatuh ke sungai. Dede panik dan berusaha menyelamatkan beruang itu. Ia melompat ke sungai dan berubah menjadi ikan paus untuk mengangkat beruang itu. Beruang itu pun selamat, dan mereka semua tertawa terbahak-bahak. Namun, kegembiraan itu tak berlangsung lama. Tiba-tiba, dari dalam perut Dede muncul seekor kelinci raksasa yang kelaparan. Kelinci itu memakan semua bunga matahari di kepala Dede hingga habis. Dede pun kembali ke bentuk semula, merasa sedikit pusing. Sejak saat itu, Dede lebih berhati-hati dalam memilih makanan. Ia masih suka mencoba makanan-makanan aneh, tapi ia selalu memastikan bahwa makanan itu aman dikonsumsi dan tidak akan mengubahnya menjadi makhluk aneh lainnya.",
+        created_at: "2025-01-08T14:56:28+08:00",
+      },
+    ],
   },
   {
-    id: 4,
-    title: "The Last of Us 4",
-    author_name: "John Doe",
-    created_at: new Date().toISOString(),
-    category_name: "horror",
-    avatar:
-      "https://dl.dropbox.com/scl/fi/xpzps77me2votw6y204ny/avatar-2.png?rlkey=fcr27tau2wffcugzlxq41bi26&st=82hsf9kj&dl=0",
-    body: "Seperti hari-hari biasa, aku bangun pagi, sarapan dan pergi ke stasuin untuk naik kereta dan berangkat kerja. Hari ini cukup lambat karena nampaknya kereta akan telat datang sekitar 10 menit. Aku dan orang-orang yang memiliki tujuan yang sama ini hanya menunggu di kursi sebelum kereta datang. 15 menit. Itulah waktu yang",
-    banner:
-      "https://images.unsplash.com/photo-1733970532531-c1eb5bbb165f?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    category_id: 4,
+    category_name: "Comedy",
+    stories: [
+      {
+        story_id: 6,
+        title: "Genkan sang legenda",
+        author: {
+          name: "Kak Tegar",
+          avatar:
+            "https://dl.dropbox.com/scl/fi/xpzps77me2votw6y204ny/avatar-2.png?rlkey=fcr27tau2wffcugzlxq41bi26&st=82hsf9kj&dl=0",
+        },
+        content:
+          "Genkan, merupakan sebuah grup pertemanan 4 orang mahasiswa instiki yang menempuh studi independen di timedoor indonesia, mereka bertekad untuk lulus bersama-sama dan bekkerja di Jepang bersama, mereka pun bersemangat saat belajar IT dan bahasa jepang, perjuangan mereka benar-benar menginspirasi dengan menerapkan tagline instiki yaitu menjadi dan memberi",
+        created_at: "2025-01-08T13:56:46+08:00",
+      },
+    ],
   },
   {
-    id: 5,
-    title: "The Last of Us 5",
-    author_name: "John Doe",
-    created_at: new Date().toISOString(),
-    category_name: "horror",
-    avatar:
-      "https://dl.dropbox.com/scl/fi/xpzps77me2votw6y204ny/avatar-2.png?rlkey=fcr27tau2wffcugzlxq41bi26&st=82hsf9kj&dl=0",
-    body: "Seperti hari-hari biasa, aku bangun pagi, sarapan dan pergi ke stasuin untuk naik kereta dan berangkat kerja. Hari ini cukup lambat karena nampaknya kereta akan telat datang sekitar 10 menit. Aku dan orang-orang yang memiliki tujuan yang sama ini hanya menunggu di kursi sebelum kereta datang. 15 menit. Itulah waktu yang",
-    banner:
-      "https://images.unsplash.com/photo-1733970532531-c1eb5bbb165f?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    category_id: 5,
+    category_name: "Fiction",
+    stories: [],
   },
 ];
 

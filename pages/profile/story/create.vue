@@ -1,6 +1,6 @@
 <template>
   <LayoutsCommonLayout container="lg">
-    <div :class="cn('mt-28 h-screen')">
+    <div :class="cn('mt-28')">
       <Back urlBack="/profile" title="Write Story" />
 
       <section class="mt-10">
