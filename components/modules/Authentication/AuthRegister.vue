@@ -11,7 +11,7 @@
   </h2>
 
   <div :class="cn('flex flex-col space-y-5 select-none', $attrs.class ?? '')">
-    <Form method="post" @submit="onSubmit">
+    <Form @submit="onSubmit">
       <UiInput
         hasLabel
         type="text"
@@ -19,7 +19,7 @@
         placeholder="Enter your name"
         :inputClass="cn('py-6 font-medium text-base')"
         :wrapperClassName="cn('mb-6')"
-        v-model="formData.fullname"
+        v-model="formRegisterData.fullname"
         isRequired
       />
 
@@ -30,7 +30,7 @@
         placeholder="Enter your username"
         :inputClass="cn('py-6 font-medium text-base')"
         :wrapperClassName="cn('mb-6')"
-        v-model="formData.username"
+        v-model="formRegisterData.username"
         isRequired
       />
 
@@ -41,7 +41,7 @@
         placeholder="Enter your email"
         :inputClass="cn('py-6 font-medium text-base')"
         :wrapperClassName="cn('mb-6')"
-        v-model="formData.email"
+        v-model="formRegisterData.email"
         isRequired
       />
 
@@ -52,7 +52,7 @@
         placeholder="Enter your chosen password"
         :inputClass="cn('py-6 font-medium text-base')"
         :wrapperClassName="cn('mb-6')"
-        v-model="formData.password"
+        v-model="formRegisterData.password"
         isRequired
       />
 
@@ -63,7 +63,7 @@
         placeholder="Re-enter your chosen password"
         :inputClass="cn('py-6 font-medium text-base')"
         :wrapperClassName="cn('mb-6')"
-        v-model="formData.confirmPassword"
+        v-model="formRegisterData.confirmPassword"
         isRequired
       />
 
@@ -72,9 +72,10 @@
           type="submit"
           size="default"
           variant="default"
+          :disabled="isDisabled || isLoading"
           :class="cn('bg-olive-drab h-12 text-base', 'hover:bg-olive-drab/90')"
         >
-          Create Account
+          {{ isLoading ? "Processing..." : "Create Account" }}
         </UiButton>
       </div>
     </Form>
@@ -94,16 +95,17 @@
 </template>
 
 <script setup lang="ts">
-import type { RegisterPayload } from "@/composables/services/useAuthService";
-
-import { Form } from "vee-validate";
-import * as z from "zod";
-
-import { ref, reactive } from "vue";
+import {
+  useAuthService,
+  type RegisterPayload,
+} from "~/composables/services/useAuthService";
+import type { ApiResponse } from "~/types/response";
 
 const isLoading = ref(false);
 
-const formData = reactive({
+const { register } = useAuthService();
+
+const formRegisterData = reactive({
   fullname: "",
   username: "",
   email: "",
@@ -111,24 +113,55 @@ const formData = reactive({
   confirmPassword: "",
 });
 
-// const getPayloads = (): RegisterPayload => {
-//   return {
-//     fullname: formData.name,
-//     username: String(formData.username)?.toLowerCase(),
-//     email: String(formData.email)?.toLowerCase(),
-//     password: formData.password,
-//     password_confirmation: formData.confirmPassword,
-//   };
-// };
+const getPayload = (): RegisterPayload => {
+  return {
+    fullname: formRegisterData?.fullname,
+    username: String(formRegisterData.username)?.toLowerCase(),
+    email: String(formRegisterData.email)?.toLowerCase(),
+    password: formRegisterData.password,
+    password_confirmation: formRegisterData?.confirmPassword,
+  };
+};
 
-const onSubmit = async (): Promise<void> => {
+const clearForm = (): void => {
+  formRegisterData.fullname = "";
+  formRegisterData.username = "";
+  formRegisterData.email = "";
+  formRegisterData.password = "";
+  formRegisterData.confirmPassword = "";
+};
+
+const onSubmit = async (event: FormDataEvent): Promise<void> => {
+  event.preventDefault();
+  const payload = getPayload();
+
   try {
     isLoading.value = true;
 
+    const response = await register(payload);
+
+    if (response?.code === CODE_CREATED) {
+      const result = response?.data;
+
+      clearForm();
+    }
+
     isLoading.value = false;
-  } catch (error) {
-    isLoading.value = false;
+  } catch (error: any) {
+    const dataError = error?.data as ApiResponse<null>;
+
     console.error({ error });
+    isLoading.value = false;
   }
 };
+
+const isDisabled = computed(() => {
+  return (
+    !formRegisterData.email ||
+    !formRegisterData.password ||
+    formRegisterData.password.length < 8 ||
+    !formRegisterData.fullname ||
+    !formRegisterData.username
+  );
+});
 </script>

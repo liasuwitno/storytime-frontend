@@ -16,8 +16,9 @@ type RequestMethods = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig();
+  const { getCookies } = useCookies();
 
-  const APP_ENV = config.public.NUXT_APP;
+  const APP_ENV = config.public.NUXT_API_ENV;
   const API_BASE_DEV = config.public.NUXT_PUBLIC_API_BASE_DEV;
   const API_BASE_PROD = config.public.NUXT_PUBLIC_API_BASE_PROD;
 
@@ -25,7 +26,7 @@ export default defineNuxtPlugin(() => {
 
   const getDefaultHeaders = () => ({
     "Content-Type": "application/json",
-    Authorization: `Bearer ${getCookie("session") ?? ""}`,
+    Authorization: `Bearer ${getCookies("session") ?? ""}`,
   });
 
   const createRequest = <T, R>(method: RequestMethods) => {

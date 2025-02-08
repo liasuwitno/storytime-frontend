@@ -1,20 +1,35 @@
 import type { ApiResponse } from "~/types/response";
 
 export interface StoryResponse {
-  story_id: number;
+  id: number;
+  unique_id: string;
   title: string;
   slug: string;
-  author: {
-    name: string;
-    avatar: string;
+  body: string;
+  is_deleted: number;
+  user_id: number;
+  category_id: number;
+  created_at: string;
+  user: {
+    id: number;
+    fullname: string;
+    avatar: string | null;
   };
   images: Array<{
+    id: number;
     url: string;
+    related_unique_id: string;
     identifier: string;
   }>;
-  content: string;
-  created_at: string;
-  category_name?: string;
+  category: {
+    id: number;
+    name: string;
+  };
+}
+
+export interface StoryResponseDetail {
+  story: StoryResponse;
+  similar_stories: any[];
 }
 
 export interface StoryPayload {
@@ -32,7 +47,7 @@ export interface LandingStoryResponse {
 
 interface ReturnUseStoryService {
   getLandingStories: () => Promise<ApiResponse<LandingStoryResponse[]>>;
-  getStory: (slug: string) => Promise<ApiResponse<StoryResponse>>;
+  getStoryBySlug: (slug: string) => Promise<ApiResponse<StoryResponseDetail>>;
   createStory: (payload: StoryPayload) => Promise<ApiResponse<null>>;
   updateStory: (
     payload: StoryPayload,
@@ -54,10 +69,10 @@ export const useStoryService = (): ReturnUseStoryService => {
     return response;
   };
 
-  const getStory = async (
+  const getStoryBySlug = async (
     slug: string
-  ): Promise<ApiResponse<StoryResponse>> => {
-    const response = await $request.get<ApiResponse<StoryResponse>>({
+  ): Promise<ApiResponse<StoryResponseDetail>> => {
+    const response = await $request.get<ApiResponse<StoryResponseDetail>>({
       url: `/story-detail/${slug}`,
     });
 
@@ -92,7 +107,7 @@ export const useStoryService = (): ReturnUseStoryService => {
 
   return {
     getLandingStories,
-    getStory,
+    getStoryBySlug,
     createStory,
     updateStory,
     deleteStory,

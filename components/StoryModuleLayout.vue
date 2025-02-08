@@ -1,8 +1,9 @@
 <template>
   <Flicking
+    v-if="props.isSlider && isInitialized && props.stories?.length"
+    ref="flickingRef"
     :class="cn('flex items-center mt-4 mb-8', 'md:mt-6 md:mb-20')"
     :hideBeforeInit="true"
-    v-if="props.isSlider"
     :options="{
       align: 'prev',
       circular: false,
@@ -11,8 +12,8 @@
     }"
   >
     <div
-      v-for="(story, index) in props.similarStories"
-      :key="story.title"
+      v-for="(story, index) in props.stories"
+      :key="index"
       :class="cn('mr-5 w-[340px]')"
     >
       <UiCardItem
@@ -34,7 +35,7 @@
   >
     <div
       v-for="(story, index) in props.stories"
-      :key="story.story_id"
+      :key="index"
       :class="
         cn('', {
           'col-span-2 row-span-2': index === 0 && props.variant === 'grid',
@@ -43,7 +44,6 @@
       "
     >
       <UiCardItem
-        isMultipleMethod
         type="normal"
         :story="story"
         :variant="props.variant"
@@ -59,16 +59,27 @@
 
 <script setup lang="ts">
 import type { StoryResponse } from "~/composables/services/useStoryService";
-
 import { cn } from "@/utils";
 import Flicking from "@egjs/vue3-flicking";
-
 import "@egjs/vue3-flicking/dist/flicking-inline.css";
+import { ref, onMounted, nextTick } from "vue";
 
 const props = defineProps<{
   isSlider?: boolean;
   variant: "list" | "grid";
   stories?: StoryResponse[];
-  similarStories?: StoryResponse[];
 }>();
+
+const isInitialized = ref(false);
+const flickingRef = ref<InstanceType<typeof Flicking> | null>(null);
+
+onMounted(async () => {
+  if (props.isSlider && props.stories?.length) {
+    await nextTick();
+    isInitialized.value = true;
+
+    await nextTick();
+    if (flickingRef.value) (flickingRef.value as any)?.init();
+  }
+});
 </script>

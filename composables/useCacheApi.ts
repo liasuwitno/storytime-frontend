@@ -13,7 +13,7 @@ export const useCachedApi = <T>(
 ) => {
   const nuxtApp = useNuxtApp();
   const {
-    cacheTime = 1000 * 60 * 60 * 2,
+    cacheTime = 1000 * 60 * 60 * 10, // 10 hours
     key = apiFn.name,
     transform,
   } = options;

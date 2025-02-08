@@ -11,40 +11,60 @@
   </h2>
 
   <div :class="cn('flex flex-col space-y-5', $attrs.class ?? '')">
-    <form @submit="onSubmit">
-      <UiInput
-        hasLabel
-        type="text"
-        label="Email"
-        placeholder="Enter your email"
-        :inputClass="cn('py-6 font-medium')"
-        :wrapperClassName="cn('mb-6')"
-        :modelValue="formData.email"
-        isRequired
-      />
+    <Form @submit="onSubmit">
+      <Field name="email">
+        <UiInput
+          hasLabel
+          type="text"
+          label="Username/Email"
+          placeholder="Enter your username or email"
+          :inputClass="
+            cn('py-6 font-medium text-base', {
+              'border-red-500': !!errorMessage,
+            })
+          "
+          :wrapperClassName="cn('mb-6')"
+          v-model="formLoginData.email"
+          isRequired
+        />
+      </Field>
 
-      <UiInput
-        hasLabel
-        hasPassword
-        label="Password"
-        placeholder="Enter your chosen password"
-        :inputClass="cn('py-6 font-medium')"
-        :wrapperClassName="cn('mb-6')"
-        :modelValue="formData.password"
-        isRequired
-      />
+      <Field name="password">
+        <UiInput
+          hasLabel
+          hasPassword
+          label="Password"
+          placeholder="Enter your chosen password"
+          :inputClass="
+            cn('py-6 font-medium text-base', {
+              'border-red-500': !!errorMessage,
+            })
+          "
+          :wrapperClassName="cn('mb-6')"
+          :hasError="!!errorMessage"
+          v-model="formLoginData.password"
+          :inputMessage="
+            !!errorMessage
+              ? errorMessage
+              : 'Password must be at least 8 characters long'
+          "
+          isRequired
+        />
+      </Field>
 
       <div class="grid gap-2">
         <UiButton
-          type="button"
+          as="button"
+          type="submit"
           size="default"
           variant="default"
+          :disabled="isLoading || isDisabled"
           :class="cn('bg-olive-drab h-12 text-base', 'hover:bg-olive-drab/90')"
         >
-          Login
+          {{ isLoading ? "Processing..." : "Login" }}
         </UiButton>
       </div>
-    </form>
+    </Form>
 
     <div class="relative">
       <p>
@@ -61,25 +81,78 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { reactive } from "vue";
 
-import { Button } from "~/components/ui/button";
+import {
+  type LoginPayload,
+  useAuthService,
+} from "~/composables/services/useAuthService";
+import type { ApiResponse } from "~/types/response";
+import { useAuthenticationStore } from "~/stores/auth";
 
-const formData = reactive({
-  name: "",
-  username: "",
+const isLoading = ref<boolean>(false);
+const errorMessage = ref<string | null>(null);
+
+const { login } = useAuthService();
+
+const authenticationStore = useAuthenticationStore();
+const formLoginData = reactive({
   email: "",
   password: "",
-  confirmPassword: "",
 });
 
-const isLoading = ref(false);
-async function onSubmit(event: Event) {
-  event.preventDefault();
-  isLoading.value = true;
+const getPayload = (): LoginPayload => {
+  return {
+    email: String(formLoginData.email)?.toLowerCase(),
+    password: formLoginData.password,
+  };
+};
 
-  setTimeout(() => {
+const clearForm = (): void => {
+  formLoginData.email = "";
+  formLoginData.password = "";
+};
+
+const onSubmit = async (event: FormDataEvent): Promise<void> => {
+  event.preventDefault();
+
+  const payload = getPayload();
+
+  try {
+    isLoading.value = true;
+
+    const response = await login(payload);
+
+    if (response?.code === CODE_OK) {
+      const result = response?.data;
+      const expiresIn = result
+        ? new Date().getTime() + result?.session?.expires_in || 1 * 1000
+        : 0;
+
+      authenticationStore.setCredentials({
+        session_in: expiresIn,
+        token: result?.token ?? "",
+      });
+      clearForm();
+
+      navigateTo("/");
+    }
+
     isLoading.value = false;
-  }, 3000);
-}
+  } catch (error: any) {
+    const dataError = error?.data as ApiResponse<null>;
+    errorMessage.value = dataError?.message ?? "";
+
+    console.error({ error });
+    isLoading.value = false;
+  }
+};
+
+const isDisabled = computed(() => {
+  return (
+    !formLoginData.email ||
+    !formLoginData.password ||
+    formLoginData.password.length < 8
+  );
+});
 </script>

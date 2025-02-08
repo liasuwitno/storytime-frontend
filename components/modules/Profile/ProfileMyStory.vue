@@ -39,6 +39,8 @@
   </div>
 
   <div class="col-span-2 flex justify-center mt-8">
+  <Pagination>
+  </Pagination>
     <Pagination
       v-slot="{ page }"
       :total="100"

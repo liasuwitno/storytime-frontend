@@ -2,7 +2,7 @@ import type { ApiResponse } from "~/types/response";
 
 export interface CategoriesResponse {
   id: number;
-  category_name: string;
+  name: string;
 }
 
 interface ReturnUseStoryService {

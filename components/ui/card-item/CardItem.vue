@@ -78,7 +78,7 @@
       />
     </figure>
 
-    <NuxtLink :to="props.url" class="py-2">
+    <NuxtLink :to="props?.url" class="py-2">
       <div class="content">
         <h3
           :class="
@@ -92,7 +92,7 @@
           {{ story?.title ?? "-" }}
         </h3>
         <p :class="cn('text-sm line-clamp-3 text-gray-600 leading-normal')">
-          {{ story?.content ?? "-" }}
+          {{ story?.body ?? "-" }}
         </p>
       </div>
 
@@ -100,7 +100,7 @@
         <div class="flex items-center space-x-2 overflow-hidden">
           <NuxtImg
             :src="
-              story?.author?.avatar ??
+              story?.user?.avatar ??
               'https://via.assets.so/img.jpg?w=800&h=400&tc=#cecece&bg=#cecece'
             "
             alt="Avatar"
@@ -114,7 +114,7 @@
               )
             "
           >
-            {{ story?.author?.name ?? "-" }}
+            {{ story?.user?.fullname ?? "-" }}
           </p>
         </div>
 
@@ -129,11 +129,11 @@
             :class="
               cn('text-xs text-raisin-black font-semibold tracking-tight')
             "
-            >{{ formatDate(story.created_at) }}</span
+            >{{ formatDate(story?.created_at) }}</span
           >
 
           <UiBadge v-if="hasCategory" class="capitalize">
-            {{ story?.category_name ?? "-" }}
+            {{ story?.category?.name ?? "-" }}
           </UiBadge>
         </div>
       </div>

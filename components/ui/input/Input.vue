@@ -18,6 +18,9 @@ const props = defineProps<{
   label?: string;
   wrapperClassName?: string;
   hasPassword?: boolean;
+
+  hasError?: boolean;
+  inputMessage?: string;
 }>();
 
 const emits = defineEmits<{
@@ -44,7 +47,7 @@ const inputType = computed(() => props.type || "text");
       {{ props.label }}
     </UiFormLabel>
 
-    <div class="relative">
+    <div class="relative pb-1">
       <template v-if="props.iconLeft">
         <span
           class="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-500"
@@ -58,7 +61,7 @@ const inputType = computed(() => props.type || "text");
         v-model="modelValue"
         :class="
           cn(
-            'flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50',
+            'flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50',
             props.inputClass
           )
         "
@@ -87,5 +90,17 @@ const inputType = computed(() => props.type || "text");
         </span>
       </template>
     </div>
+
+    <span
+      v-if="props.inputMessage"
+      :class="
+        cn('text-sm font-semibold tracking-tight pt-20', {
+          'text-red-500': props.hasError,
+          'text-gray-600': !props.hasError,
+        })
+      "
+    >
+      {{ props.inputMessage }}
+    </span>
   </div>
 </template>

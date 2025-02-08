@@ -10,11 +10,7 @@
           isShowExploreMore
         />
 
-        <StoryModuleLayout
-          :similarStories="latestStory"
-          variant="list"
-          isSlider
-        />
+        <StoryModuleLayout :stories="latestStory" variant="list" isSlider />
       </section>
 
       <section v-for="(story, index) in stories" :key="story?.category_name">
@@ -42,51 +38,46 @@
       <div class="flex items-center justify-center py-10">Loading...</div>
     </div>
 
-    <!-- <section>
-      <UiSectionBar title="Romance" redirectLink="/" isShowExploreMore />
-      <StoryModuleLayout :stories="FIND_THREE_MOCK_DATA" variant="list" />
-    </section>
-
     <section>
-      <UiSectionBar title="Horror" redirectLink="/" isShowExploreMore />
-      <StoryModuleLayout :stories="FIND_THREE_MOCK_DATA" variant="grid" />
-    </section> -->
-
-    <!-- <section>
       <UiSectionBar title="More Categories" />
       <div class="relative flex items-center space-x-4 flex-wrap mt-8">
         <NuxtLink
           :key="category.id"
-          v-for="category in CATEGORIES"
+          v-for="category in categories"
           :to="`/`"
           :class="
             cn('bg-[#F0F5ED] px-8 py-7 rounded-md', 'hover:bg-[#F0F5ED]/50')
           "
         >
           <p :class="cn('text-[#466543] font-medium text-base tracking-tight')">
-            {{ category.name }}
+            {{ category?.name ?? "-" }}
           </p>
         </NuxtLink>
       </div>
-    </section> -->
+    </section>
   </LayoutsCommonLayout>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useStoryService } from "~/composables/services/useStoryService";
-
-import type {
-  LandingStoryResponse,
-  StoryResponse,
+import {
+  useCategoryService,
+  type CategoriesResponse,
+} from "~/composables/services/useCategoryService";
+import {
+  useStoryService,
+  type LandingStoryResponse,
+  type StoryResponse,
 } from "~/composables/services/useStoryService";
+import { useAuthenticationStore } from "~/stores/auth";
 
-const stories = ref<LandingStoryResponse[]>([]);
 const latestStory = ref<StoryResponse[]>([]);
+const stories = ref<LandingStoryResponse[]>([]);
+const categories = ref<CategoriesResponse[]>([]);
 
 const isLoading = ref<boolean>(false);
 
 const { getLandingStories } = useStoryService();
+const { getCategories: getAllCategories } = useCategoryService();
 
 const getStories = async (): Promise<void> => {
   try {
@@ -122,7 +113,31 @@ const getStories = async (): Promise<void> => {
   }
 };
 
+const getCategories = async (): Promise<void> => {
+  try {
+    isLoading.value = true;
+
+    const response = await getAllCategories();
+
+    if (response?.code === CODE_OK) {
+      const categoriesData = response.data;
+
+      categories.value = categoriesData?.map((category) => ({
+        id: category.id,
+        name: category.name,
+      }));
+    }
+
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    console.error({ error });
+  }
+};
+
 onMounted(async () => {
   await getStories();
+  await nextTick();
+  await getCategories();
 });
 </script>

@@ -22,10 +22,21 @@ export interface RegisterPayload {
   password_confirmation: string;
 }
 
+export interface ProfileResponse {
+  id: string;
+  fullname: string;
+  username: string;
+  email: string;
+  avatar: string | null;
+  status: "active" | "inactive";
+  bio: string;
+}
+
 interface ReturnUseAuthService {
   login: (payload: LoginPayload) => Promise<ApiResponse<LoginResponse | null>>;
   register: (payload: RegisterPayload) => Promise<ApiResponse<null>>;
   logOut: () => Promise<ApiResponse<null>>;
+  getProfile: () => Promise<ApiResponse<ProfileResponse>>;
 }
 
 export const useAuthService = (): ReturnUseAuthService => {
@@ -64,9 +75,18 @@ export const useAuthService = (): ReturnUseAuthService => {
     return response;
   };
 
+  const getProfile = async (): Promise<ApiResponse<ProfileResponse>> => {
+    const response = await $request.get<ApiResponse<ProfileResponse>>({
+      url: "/profile",
+    });
+
+    return response;
+  };
+
   return {
     login,
     register,
     logOut,
+    getProfile,
   };
 };

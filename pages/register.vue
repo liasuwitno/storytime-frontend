@@ -1,7 +1,3 @@
-<script setup lang="ts">
-import UserAuthFormRegister from "@/components/modules/Authentication/AuthRegister.vue";
-</script>
-
 <template>
   <LayoutsSEOLayout title="Register">
     <section
@@ -72,3 +68,7 @@ import UserAuthFormRegister from "@/components/modules/Authentication/AuthRegist
     </section>
   </LayoutsSEOLayout>
 </template>
+
+<script setup lang="ts">
+import UserAuthFormRegister from "@/components/modules/Authentication/AuthRegister.vue";
+</script>
