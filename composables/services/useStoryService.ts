@@ -1,35 +1,26 @@
 import type { ApiResponse } from "~/types/response";
 
 export interface StoryResponse {
-  id: number;
-  unique_id: string;
+  story_id: number;
   title: string;
   slug: string;
-  body: string;
-  is_deleted: number;
-  user_id: number;
-  category_id: number;
-  created_at: string;
-  user: {
-    id: number;
-    fullname: string;
+  author: {
+    name: string;
     avatar: string | null;
   };
+  content: string;
   images: Array<{
-    id: number;
     url: string;
-    related_unique_id: string;
     identifier: string;
   }>;
-  category: {
-    id: number;
-    name: string;
-  };
+  is_bookmark: boolean;
+  category_name: string;
+  created_at: string;
 }
 
 export interface StoryResponseDetail {
   story: StoryResponse;
-  similar_stories: any[];
+  similar_stories: StoryResponse[];
 }
 
 export interface StoryPayload {

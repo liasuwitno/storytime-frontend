@@ -32,7 +32,7 @@
     <LayoutsCommonLayout container="lg">
       <section class="block">
         <ModulesStoryDetailHeader
-          :users="storyDetail?.story?.user"
+          :users="storyDetail?.story?.author"
           :createdAt="storyDetail?.story?.created_at ?? ''"
           :title="storyDetail?.story?.title ?? ''"
         />
@@ -51,25 +51,61 @@
         <div class="col-span-1 content-images">
           <div class="grid grid-cols-3 gap-4">
             <div
-              v-for="(image, index) in storyDetail?.story?.images"
+              v-for="(image, index) in images"
               :key="index"
               :class="[
                 'rounded-md overflow-hidden cursor-pointer',
+                'relative',
                 {
                   'col-span-3': index === 0,
                   'col-span-1': index !== 0,
                 },
               ]"
-              @click="handleImageClick(index)"
             >
+              <div
+                v-if="index === 0"
+                :class="
+                  cn(
+                    'flex items-center justify-between w-full px-2',
+                    'absolute bottom-0 top-0'
+                  )
+                "
+              >
+                <button
+                  type="button"
+                  @click.stop="handlePrevious"
+                  :disabled="isFirstSlide"
+                  :class="
+                    cn('hover:bg-white/20 rounded-full p-2 transition-all', {
+                      'opacity-50 cursor-not-allowed': isFirstSlide,
+                    })
+                  "
+                >
+                  <ChevronLeft :size="36" stroke="#fff" stroke-width="3" />
+                </button>
+                <button
+                  type="button"
+                  @click.stop="handleNext"
+                  :disabled="isLastSlide"
+                  :class="
+                    cn('hover:bg-white/20 rounded-full p-2 transition-all', {
+                      'opacity-50 cursor-not-allowed': isLastSlide,
+                    })
+                  "
+                >
+                  <ChevronRight :size="36" stroke="#fff" stroke-width="3" />
+                </button>
+              </div>
+
               <NuxtImg
-                :src="image?.url ?? ''"
+                :src="index === 0 ? images[currentIndexImage]?.url : image.url"
                 :alt="'Image- ' + index"
                 :class="[
-                  'w-full object-cover',
+                  'w-full object-cover transition-opacity duration-300',
                   {
-                    'h-72': index === 0,
+                    'h-80': index === 0,
                     'h-28': index !== 0,
+                    'opacity-50': index !== 0 && index !== currentIndexImage,
                   },
                 ]"
               />
@@ -79,7 +115,7 @@
 
         <article class="col-span-2">
           <p :class="cn('text-base font-medium text-raisin-black')">
-            {{ storyDetail?.story?.body ?? "..." }}
+            {{ storyDetail?.story?.content ?? "..." }}
           </p>
         </article>
       </section>
@@ -100,7 +136,12 @@
 
       <section class="mt-52">
         <UiSectionBar title="Similar Story" :isShowExploreMore="false" />
-        <template v-if="!storyDetail?.similar_stories?.length">
+        <template v-if="!storyDetail?.similar_stories">
+          <div class="grid grid-cols-3 gap-4 mt-3">
+            <UiSkeletonCardSkeleton v-for="i in 3" :key="i" />
+          </div>
+        </template>
+        <template v-else-if="storyDetail?.similar_stories?.length < 1">
           <p class="text-base font-medium text-raisin-black">
             No similar stories found
           </p>
@@ -117,6 +158,7 @@
 </template>
 
 <script setup lang="ts">
+import { ChevronLeft, ChevronRight } from "lucide-vue-next";
 import {
   useStoryService,
   type StoryResponseDetail,
@@ -126,10 +168,36 @@ import { changeToNormalText } from "~/utils";
 const { params } = useRoute();
 const { getStoryBySlug } = useStoryService();
 
-const isLoading = ref<boolean>(false);
-const storyDetail = ref<StoryResponseDetail | null>(null);
+const currentIndexImage = ref<number>(0);
 
-const handleImageClick = (clickedIndex: number): void => {};
+const isLoading = ref<boolean>(false);
+
+const storyDetail = ref<StoryResponseDetail | null>(null);
+const images = computed(() => storyDetail.value?.story?.images || []);
+
+watch(
+  () => images.value,
+  () => {
+    currentIndexImage.value = 0;
+  }
+);
+
+const handlePrevious = () => {
+  if (currentIndexImage.value > 0) {
+    currentIndexImage.value--;
+  }
+};
+
+const handleNext = () => {
+  if (currentIndexImage.value < images?.value.length - 1) {
+    currentIndexImage.value++;
+  }
+};
+
+const isFirstSlide = computed(() => currentIndexImage.value === 0);
+const isLastSlide = computed(
+  () => currentIndexImage.value === images.value.length - 1
+);
 
 const fetchDetailStory = async (slug: string): Promise<void> => {
   try {
@@ -150,6 +218,13 @@ const fetchDetailStory = async (slug: string): Promise<void> => {
 };
 
 onMounted(() => {
-  if (params.slug) fetchDetailStory(params.slug as string);
+  if (params.slug && !storyDetail.value)
+    fetchDetailStory(params.slug as string);
 });
 </script>
+
+<style scoped>
+.content-images img {
+  transition: all 0.3s ease-in-out;
+}
+</style>

@@ -21,12 +21,12 @@
         <UiAvatar>
           <NuxtImg
             :src="users?.avatar ?? ''"
-            :alt="users?.fullname"
+            :alt="users?.name"
             :class="cn('bg-cover')"
           />
         </UiAvatar>
         <p :class="cn('font-semibold text-base text-raisin-black')">
-          {{ users?.fullname ?? "-" }}
+          {{ users?.name ?? "-" }}
         </p>
       </div>
     </div>
@@ -74,7 +74,7 @@ import type { StoryResponseDetail } from "~/composables/services/useStoryService
 const isLoading = ref<boolean>(true);
 
 const props = defineProps<{
-  users: StoryResponseDetail["story"]["user"] | undefined;
+  users: StoryResponseDetail["story"]["author"] | undefined;
   createdAt: string;
   title: string;
 }>();

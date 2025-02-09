@@ -21,6 +21,7 @@
         :story="story"
         :variant="props.variant"
         :url="`/stories/${story.slug}`"
+        :isBookmarked="story.is_bookmark"
         :index="index"
         :methods="{
           bookmarkOnClick: () => {},
@@ -48,6 +49,7 @@
         :story="story"
         :variant="props.variant"
         :url="`/stories/${story.slug}`"
+        :isBookmarked="story.is_bookmark"
         :index="index"
         :methods="{
           bookmarkOnClick: () => {},

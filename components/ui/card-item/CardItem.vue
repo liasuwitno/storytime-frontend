@@ -1,6 +1,6 @@
 <template>
-  <div :class="cn('card flex flex-col justify-between')">
-    <figure class="relative group overflow-hidden rounded-lg">
+  <div class="flex h-full flex-col justify-between">
+    <figure class="relative group h-full overflow-hidden rounded-lg">
       <UiButton
         v-if="isMultipleMethod"
         size="icon"
@@ -18,7 +18,7 @@
         "
         @click="methods.deleteOnClick || (() => {})"
       >
-        <Trash2 class="h-20" />
+        <Trash2 :size="20" />
       </UiButton>
 
       <UiButton
@@ -27,9 +27,11 @@
         variant="default"
         :class="
           cn(
-            'bg-asparagus hover:bg-asparagus/90 absolute bottom-5 z-50 transform translate-y-full opacity-0 visibility-hidden transition-all duration-300',
-            'group-hover:translate-y-0 group-hover:opacity-100 group-hover:visibility-visible',
+            'bg-asparagus hover:bg-asparagus/90 absolute bottom-5 z-50 transform translate-y-full transition-all duration-300',
             {
+              'opacity-0 visibility-hidden group-hover:translate-y-0 group-hover:opacity-100 group-hover:visibility-visible':
+                !isBookmarked,
+              'bottom-16 border-2 border-white': isBookmarked,
               'right-5': props.type === 'normal',
               'right-20': props.type !== 'normal',
             }
@@ -37,7 +39,7 @@
         "
         @click="methods.bookmarkOnClick || (() => {})"
       >
-        <Bookmark class="h-20" />
+        <Bookmark :size="20" :fill="isBookmarked ? '#FFF' : 'none'" />
       </UiButton>
 
       <UiButton
@@ -54,7 +56,7 @@
         "
         @click="methods.updateOnClick || (() => {})"
       >
-        <Pencil class="h-20" />
+        <Pencil :size="20" />
       </UiButton>
 
       <NuxtImg
@@ -64,13 +66,7 @@
             : 'https://via.assets.so/img.jpg?w=800&h=400&tc=#cecece&bg=#cecece'
         "
         :alt="story?.title ?? 'Image'"
-        :class="
-          cn('w-full object-cover', {
-            'h-[685px]': props.index === 0 && props.variant === 'grid',
-            'h-[240px]': props.index !== 0 && props.variant === 'grid',
-            'h-64': props.variant === 'list',
-          })
-        "
+        class="w-full h-full object-cover"
       />
 
       <div
@@ -91,8 +87,10 @@
         >
           {{ story?.title ?? "-" }}
         </h3>
-        <p :class="cn('text-sm line-clamp-3 text-gray-600 leading-normal')">
-          {{ story?.body ?? "-" }}
+        <p
+          :class="cn('text-sm line-clamp-3 text-gray-600 leading-normal h-16')"
+        >
+          {{ story?.content ?? "-" }}
         </p>
       </div>
 
@@ -100,7 +98,7 @@
         <div class="flex items-center space-x-2 overflow-hidden">
           <NuxtImg
             :src="
-              story?.user?.avatar ??
+              story?.author?.avatar ??
               'https://via.assets.so/img.jpg?w=800&h=400&tc=#cecece&bg=#cecece'
             "
             alt="Avatar"
@@ -114,7 +112,7 @@
               )
             "
           >
-            {{ story?.user?.fullname ?? "-" }}
+            {{ story?.author?.name ?? "-" }}
           </p>
         </div>
 
@@ -129,17 +127,19 @@
             :class="
               cn('text-xs text-raisin-black font-semibold tracking-tight')
             "
-            >{{ formatDate(story?.created_at) }}</span
           >
+            {{ formatDate(story?.created_at) }}
+          </span>
 
           <UiBadge v-if="hasCategory" class="capitalize">
-            {{ story?.category?.name ?? "-" }}
+            {{ story?.category_name ?? "-" }}
           </UiBadge>
         </div>
       </div>
     </NuxtLink>
   </div>
 </template>
+
 <script setup lang="ts">
 import { Bookmark, Pencil, Trash2 } from "lucide-vue-next";
 import type { StoryResponse } from "~/composables/services/useStoryService";
@@ -150,6 +150,7 @@ interface CardProps {
   variant: "list" | "grid";
   url: string;
   index: number;
+  isBookmarked?: boolean;
   isMultipleMethod?: boolean;
   hasCategory?: boolean;
   methods: {
@@ -161,3 +162,26 @@ interface CardProps {
 
 const props = defineProps<CardProps>();
 </script>
+
+<style scoped>
+.card {
+  @apply bg-white rounded-lg overflow-hidden;
+}
+
+.grid-card-large {
+  @apply min-h-[685px];
+}
+
+.grid-card-small {
+  @apply min-h-[240px];
+}
+
+figure {
+  @apply relative w-full;
+  aspect-ratio: 16/9;
+}
+
+.skeleton-wrapper {
+  @apply animate-pulse;
+}
+</style>

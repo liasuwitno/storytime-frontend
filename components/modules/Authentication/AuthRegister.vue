@@ -75,7 +75,18 @@
           :disabled="isDisabled || isLoading"
           :class="cn('bg-olive-drab h-12 text-base', 'hover:bg-olive-drab/90')"
         >
-          {{ isLoading ? "Processing..." : "Create Account" }}
+          <LoaderCircle
+            v-if="isLoading"
+            :size="16"
+            :stroke-width="3"
+            :class="
+              cn({
+                'animate-spin': isLoading,
+              })
+            "
+          />
+
+          <span>{{ isLoading ? "Processing..." : "Create Account" }}</span>
         </UiButton>
       </div>
     </Form>
@@ -95,6 +106,7 @@
 </template>
 
 <script setup lang="ts">
+import { LoaderCircle } from "lucide-vue-next";
 import {
   useAuthService,
   type RegisterPayload,

@@ -59,9 +59,24 @@
           size="default"
           variant="default"
           :disabled="isLoading || isDisabled"
-          :class="cn('bg-olive-drab h-12 text-base', 'hover:bg-olive-drab/90')"
+          :class="
+            cn(
+              'bg-olive-drab h-12 text-base flex items-center',
+              'hover:bg-olive-drab/90'
+            )
+          "
         >
-          {{ isLoading ? "Processing..." : "Login" }}
+          <LoaderCircle
+            v-if="isLoading"
+            :size="16"
+            :stroke-width="3"
+            :class="
+              cn({
+                'animate-spin': isLoading,
+              })
+            "
+          />
+          <span>{{ isLoading ? "Processing..." : "Login" }}</span>
         </UiButton>
       </div>
     </Form>
@@ -89,6 +104,7 @@ import {
 } from "~/composables/services/useAuthService";
 import type { ApiResponse } from "~/types/response";
 import { useAuthenticationStore } from "~/stores/auth";
+import { LoaderCircle } from "lucide-vue-next";
 
 const isLoading = ref<boolean>(false);
 const errorMessage = ref<string | null>(null);
