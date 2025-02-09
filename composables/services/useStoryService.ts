@@ -1,3 +1,4 @@
+import type { Pagination } from "~/types";
 import type { ApiResponse } from "~/types/response";
 
 export interface StoryResponse {
@@ -16,6 +17,16 @@ export interface StoryResponse {
   is_bookmark: boolean;
   category_name: string;
   created_at: string;
+}
+
+export interface StoryPersonalResponse {
+  stories: StoryResponse[];
+  pagination: Pagination;
+}
+
+export interface StoryBookmarkResponse {
+  bookmarks: StoryResponse[];
+  pagination: Pagination;
 }
 
 export interface StoryResponseDetail {
@@ -45,6 +56,14 @@ interface ReturnUseStoryService {
     storyId: string
   ) => Promise<ApiResponse<null>>;
   deleteStory: (storyId: string) => Promise<ApiResponse<null>>;
+  getUserStories: (config: {
+    page: number;
+    perPage: number;
+  }) => Promise<ApiResponse<StoryPersonalResponse>>;
+  getUserBookmarks: (config: {
+    page: number;
+    perPage: number;
+  }) => Promise<ApiResponse<StoryBookmarkResponse>>;
 }
 
 export const useStoryService = (): ReturnUseStoryService => {
@@ -96,11 +115,51 @@ export const useStoryService = (): ReturnUseStoryService => {
     return response;
   };
 
+  const getUserStories = async ({
+    page,
+    perPage,
+  }: {
+    page: number;
+    perPage: number;
+  }): Promise<ApiResponse<StoryPersonalResponse>> => {
+    const url =
+      page && perPage
+        ? `/user-stories?page=${page}&per_page=${perPage}`
+        : `/user-stories`;
+
+    const response = await $request.get<ApiResponse<StoryPersonalResponse>>({
+      url: url,
+    });
+
+    return response;
+  };
+
+  const getUserBookmarks = async ({
+    page,
+    perPage,
+  }: {
+    page: number;
+    perPage: number;
+  }): Promise<ApiResponse<StoryBookmarkResponse>> => {
+    const url =
+      page && perPage
+        ? `/bookmark-list?page=${page}&per_page=${perPage}`
+        : `/bookmark-list`;
+
+    const response = await $request.get<ApiResponse<StoryBookmarkResponse>>({
+      url: url,
+    });
+
+    return response;
+  };
+
   return {
     getLandingStories,
     getStoryBySlug,
     createStory,
     updateStory,
     deleteStory,
+    getUserStories,
+    getUserBookmarks,
   };
 };

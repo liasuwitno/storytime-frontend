@@ -1,113 +1,166 @@
-<!-- <template>
-  <div
-    v-if="DATA?.length < 1"
-    :class="
-      cn('flex items-center justify-center text-center col-span-2 flex-col')
-    "
-  >
-    <h3
-      class="font-bold text-raisin-black text-4xl tracking-tight font-mono mb-3"
-    >
-      No Stories Yet
-    </h3>
-    <p :class="cn('text-charcoal-gray text-lg font-medium')">
-      You haven't shared any stories yet. Start your fitness journey today!
-    </p>
+<template>
+  <template v-if="isLoading">
+    <UiSkeletonCardSkeleton v-for="j in 2" :key="j" variant="list" />
+  </template>
 
-    <figure class="text-center mt-7">
-      <NuxtImg
-        src="/images/no-stories-yet.svg"
-        alt="no-stories-illustration"
-        :class="cn('h-80 w-auto inline-block')"
+  <template v-else-if="hasBookmarks">
+    <div v-for="(story, index) in userBookmarks" :key="story.story_id">
+      <UiCardItem
+        hasCategory
+        isPrivateStory
+        isMultipleMethod
+        variant="list"
+        :story="story"
+        :url="`/stories/${story.slug}`"
+        :index="index"
+        :methods="{
+          bookmarkOnClick: () => {},
+          deleteOnClick: () => {},
+          updateOnClick: () => {},
+        }"
       />
-    </figure>
-  </div>
+    </div>
 
-  <div v-else v-for="(story, index) in DATA" :key="story.id">
-    <UiCardItem
-      isMultipleMethod
-      variant="list"
-      :story="[]"
-      :url="`/stories/${story.id}`"
-      :index="index"
-      :methods="{
-        bookmarkOnClick: () => {},
-        deleteOnClick: () => {},
-        updateOnClick: () => {},
-      }"
-    />
-  </div>
+    <div class="col-span-2 flex justify-center mt-8">
+      <Pagination
+        :total="totalPages"
+        :sibling-count="1"
+        show-edges
+        :default-page="currentPage"
+      >
+        <PaginationList v-slot="{ items }" class="flex items-center gap-1">
+          <PaginationPrev @click="prevPage" :disabled="currentPage === 1" />
+
+          <template v-for="(item, index) in items">
+            <PaginationListItem
+              v-if="item.type === 'page'"
+              :key="index"
+              :value="item.value"
+              as-child
+            >
+              <Button
+                class="w-10 h-10 p-0"
+                :variant="item.value === currentPage ? 'default' : 'outline'"
+                @click="changePage(item.value)"
+              >
+                {{ item.value }}
+              </Button>
+            </PaginationListItem>
+            <PaginationEllipsis v-else />
+          </template>
+
+          <PaginationNext
+            @click="nextPage"
+            :disabled="currentPage === totalPages"
+          />
+        </PaginationList>
+      </Pagination>
+    </div>
+  </template>
+
+  <template v-else>
+    <div
+      class="flex items-center justify-center text-center col-span-2 flex-col"
+    >
+      <h3
+        class="font-bold text-raisin-black text-4xl tracking-tight font-mono mb-3"
+      >
+        No Bookmarks Yet
+      </h3>
+      <p class="text-charcoal-gray text-lg font-medium">
+        You haven't saved any bookmarks yet. Explore and bookmark your top
+        workouts!
+      </p>
+      <figure class="text-center mt-7">
+        <NuxtImg
+          src="/images/no-bookmark-yet.svg"
+          alt="no-stories-bookmark"
+          class="h-80 w-auto inline-block"
+        />
+      </figure>
+    </div>
+  </template>
 </template>
 
 <script setup lang="ts">
-const DATA = [
-  {
-    id: 1,
-    title: "The Last of Us 6",
-    author_name: "John Doe",
-    created_at: new Date().toISOString(),
-    category_name: "horror",
-    avatar:
-      "https://dl.dropbox.com/scl/fi/xpzps77me2votw6y204ny/avatar-2.png?rlkey=fcr27tau2wffcugzlxq41bi26&st=82hsf9kj&dl=0",
-    body: "Seperti hari-hari biasa, aku bangun pagi, sarapan dan pergi ke stasuin untuk naik kereta dan berangkat kerja. Hari ini cukup lambat karena nampaknya kereta akan telat datang sekitar 10 menit. Aku dan orang-orang yang memiliki tujuan yang sama ini hanya menunggu di kursi sebelum kereta datang. 15 menit. Itulah waktu yang",
-    banner:
-      "https://images.unsplash.com/photo-1733970532531-c1eb5bbb165f?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    id: 2,
-    title: "The Last of Us 7",
-    author_name: "John Doe",
-    created_at: new Date().toISOString(),
-    category_name: "horror",
-    avatar:
-      "https://dl.dropbox.com/scl/fi/xpzps77me2votw6y204ny/avatar-2.png?rlkey=fcr27tau2wffcugzlxq41bi26&st=82hsf9kj&dl=0",
-    body: "Seperti hari-hari biasa, aku bangun pagi, sarapan dan pergi ke stasuin untuk naik kereta dan berangkat kerja. Hari ini cukup lambat karena nampaknya kereta akan telat datang sekitar 10 menit. Aku dan orang-orang yang memiliki tujuan yang sama ini hanya menunggu di kursi sebelum kereta datang. 15 menit. Itulah waktu yang",
-    banner:
-      "https://images.unsplash.com/photo-1733970532531-c1eb5bbb165f?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    id: 3,
-    title: "The Last of Us 8",
-    author_name: "John Doe",
-    created_at: new Date().toISOString(),
-    category_name: "horror",
-    avatar:
-      "https://dl.dropbox.com/scl/fi/xpzps77me2votw6y204ny/avatar-2.png?rlkey=fcr27tau2wffcugzlxq41bi26&st=82hsf9kj&dl=0",
-    body: "Seperti hari-hari biasa, aku bangun pagi, sarapan dan pergi ke stasuin untuk naik kereta dan berangkat kerja. Hari ini cukup lambat karena nampaknya kereta akan telat datang sekitar 10 menit. Aku dan orang-orang yang memiliki tujuan yang sama ini hanya menunggu di kursi sebelum kereta datang. 15 menit. Itulah waktu yang",
-    banner:
-      "https://images.unsplash.com/photo-1733970532531-c1eb5bbb165f?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    id: 4,
-    title: "The Last of Us 4",
-    author_name: "John Doe",
-    created_at: new Date().toISOString(),
-    category_name: "horror",
-    avatar:
-      "https://dl.dropbox.com/scl/fi/xpzps77me2votw6y204ny/avatar-2.png?rlkey=fcr27tau2wffcugzlxq41bi26&st=82hsf9kj&dl=0",
-    body: "Seperti hari-hari biasa, aku bangun pagi, sarapan dan pergi ke stasuin untuk naik kereta dan berangkat kerja. Hari ini cukup lambat karena nampaknya kereta akan telat datang sekitar 10 menit. Aku dan orang-orang yang memiliki tujuan yang sama ini hanya menunggu di kursi sebelum kereta datang. 15 menit. Itulah waktu yang",
-    banner:
-      "https://images.unsplash.com/photo-1733970532531-c1eb5bbb165f?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    id: 5,
-    title: "The Last of Us 5",
-    author_name: "John Doe",
-    created_at: new Date().toISOString(),
-    category_name: "horror",
-    avatar:
-      "https://dl.dropbox.com/scl/fi/xpzps77me2votw6y204ny/avatar-2.png?rlkey=fcr27tau2wffcugzlxq41bi26&st=82hsf9kj&dl=0",
-    body: "Seperti hari-hari biasa, aku bangun pagi, sarapan dan pergi ke stasuin untuk naik kereta dan berangkat kerja. Hari ini cukup lambat karena nampaknya kereta akan telat datang sekitar 10 menit. Aku dan orang-orang yang memiliki tujuan yang sama ini hanya menunggu di kursi sebelum kereta datang. 15 menit. Itulah waktu yang",
-    banner:
-      "https://images.unsplash.com/photo-1733970532531-c1eb5bbb165f?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-];
-</script> -->
+import {
+  Pagination,
+  PaginationEllipsis,
+  PaginationList,
+  PaginationListItem,
+  PaginationNext,
+  PaginationPrev,
+} from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
+import {
+  useStoryService,
+  type StoryBookmarkResponse,
+} from "~/composables/services/useStoryService";
+import { watchEffect, ref, computed } from "vue";
 
-<template lang="">
-  <div></div>
-</template>
-<script>
-export default {};
+const { getUserBookmarks } = useStoryService();
+
+const currentPage = ref<number>(1);
+const totalPages = ref<number>(1);
+const perPage = ref<number>(5);
+const isLoading = ref<boolean>(false);
+const userBookmarkMap = ref<Record<number, StoryBookmarkResponse["bookmarks"]>>(
+  {}
+);
+
+// ** Pastikan `userBookmarks` hanya memiliki data jika memang ada **
+const userBookmarks = computed(
+  () => userBookmarkMap.value[currentPage.value] || []
+);
+
+// ** Tambahkan computed untuk mengecek apakah ada data bookmark **
+const hasBookmarks = computed(
+  () => !isLoading.value && userBookmarks.value.length > 0
+);
+
+const fetchUserBookmarks = async (page: number): Promise<void> => {
+  if (userBookmarkMap.value[page]) {
+    return;
+  }
+
+  try {
+    isLoading.value = true;
+    const response = await getUserBookmarks({ page, perPage: perPage.value });
+
+    if (response?.code === 200) {
+      const data = response.data as StoryBookmarkResponse;
+      userBookmarkMap.value[page] = data.bookmarks ?? [];
+      totalPages.value = data.pagination.total_pages;
+    } else {
+      userBookmarkMap.value[page] = [];
+    }
+  } catch (error) {
+    console.error({ error });
+    userBookmarkMap.value[page] = [];
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+watchEffect(() => {
+  fetchUserBookmarks(currentPage.value);
+});
+
+const changePage = (page: number) => {
+  if (page !== currentPage.value) {
+    currentPage.value = page;
+  }
+};
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+  }
+};
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+  }
+};
 </script>
-<style lang=""></style>

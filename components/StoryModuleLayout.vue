@@ -2,7 +2,9 @@
   <Flicking
     v-if="props.isSlider && isInitialized && props.stories?.length"
     ref="flickingRef"
-    :class="cn('flex items-center mt-4 mb-8', 'md:mt-6 md:mb-20')"
+    :class="
+      cn('flex items-center mt-4 mb-8 cursor-pointer', 'md:mt-6 md:mb-20')
+    "
     :hideBeforeInit="true"
     :options="{
       align: 'prev',
@@ -18,13 +20,16 @@
     >
       <UiCardItem
         type="normal"
+        hasCategory
         :story="story"
         :variant="props.variant"
         :url="`/stories/${story.slug}`"
         :isBookmarked="story.is_bookmark"
         :index="index"
         :methods="{
-          bookmarkOnClick: () => {},
+          bookmarkOnClick: () => {
+            console.log('ASU 2');
+          },
         }"
       />
     </div>
@@ -52,7 +57,9 @@
         :isBookmarked="story.is_bookmark"
         :index="index"
         :methods="{
-          bookmarkOnClick: () => {},
+          bookmarkOnClick: () => {
+            console.log('ASU 1');
+          },
         }"
       />
     </div>

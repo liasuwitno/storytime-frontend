@@ -142,15 +142,15 @@ const onSubmit = async (event: FormDataEvent): Promise<void> => {
     if (response?.code === CODE_OK) {
       const result = response?.data;
       const expiresIn = result
-        ? new Date().getTime() + result?.session?.expires_in || 1 * 1000
+        ? new Date(result?.session?.expires_at).getTime()
         : 0;
 
       authenticationStore.setCredentials({
         session_in: expiresIn,
         token: result?.token ?? "",
       });
-      clearForm();
 
+      clearForm();
       navigateTo("/");
     }
 

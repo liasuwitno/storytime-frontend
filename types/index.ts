@@ -7,3 +7,11 @@ export interface CardItemProps {
   avatar: string;
   created_at: string;
 }
+
+export interface Pagination {
+  current_page: number;
+  total_pages: number;
+  per_page: number;
+  total_data: number;
+  has_more_pages: number;
+}

@@ -7,11 +7,17 @@
       )
     "
   >
+    <h2
+      v-if="props.hasName"
+      :class="
+        cn('font-mono text-raisin-black text-6xl font-bold tracking-tight')
+      "
+    >
+      Hi, {{ props.authenticatedName ?? "" }}
+    </h2>
     <h1
       :class="
-        cn(
-          'font-mono text-raisin-black text-6xl font-bold tracking-tight leading-normal'
-        )
+        cn('font-mono text-raisin-black text-6xl font-bold tracking-tight mb-2')
       "
     >
       Welcome to Storytime
@@ -44,4 +50,11 @@
 <script setup lang="ts">
 import { cn } from "@/utils";
 import { Search } from "lucide-vue-next";
+
+interface Props {
+  hasName?: boolean;
+  authenticatedName?: string | null;
+}
+
+const props = defineProps<Props>();
 </script>

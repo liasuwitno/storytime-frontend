@@ -9,6 +9,7 @@
           redirectLink="/stories"
           isShowExploreMore
         />
+
         <StoryModuleLayout :stories="latestStory" variant="list" isSlider />
       </section>
 
@@ -22,7 +23,7 @@
         <StoryModuleLayout
           v-if="story?.stories?.length > 0"
           :stories="story?.stories"
-          variant="grid"
+          :variant="index % 2 !== 1 ? 'grid' : 'list'"
         />
 
         <div v-else class="flex items-center justify-center mt-8 py-10">
@@ -66,7 +67,7 @@
         <NuxtLink
           v-for="category in categories"
           :key="category.id"
-          :to="`/`"
+          :to="`/stories/${category.name}`"
           class="bg-[#F0F5ED] px-8 py-7 rounded-md hover:bg-[#F0F5ED]/50"
         >
           <p class="text-[#466543] font-medium text-base tracking-tight">

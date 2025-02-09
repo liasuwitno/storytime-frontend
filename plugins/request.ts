@@ -1,3 +1,6 @@
+import { useAuthenticationStore } from "~/stores/auth";
+import type { ApiResponse } from "~/types/response";
+
 interface RequestProps<T> {
   url: string;
   headers?: Record<string, string>;
@@ -17,6 +20,8 @@ type RequestMethods = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig();
   const { getCookies } = useCookies();
+
+  const { logout } = useAuthenticationStore();
 
   const APP_ENV = config.public.NUXT_API_ENV;
   const API_BASE_DEV = config.public.NUXT_PUBLIC_API_BASE_DEV;
@@ -41,6 +46,13 @@ export default defineNuxtPlugin(() => {
         },
         body: body ? JSON.stringify(body) : undefined,
       });
+
+      if ((response as ApiResponse<null>)?.code === 401) {
+        logout();
+        navigateTo("/login");
+
+        return {} as R;
+      }
 
       return response as R;
     };

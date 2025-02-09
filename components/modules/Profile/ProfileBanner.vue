@@ -1,4 +1,4 @@
-<template lang="">
+<template>
   <section :class="cn('bg-[#F0F5ED]')">
     <div
       :class="
@@ -8,31 +8,53 @@
         )
       "
     >
-      <div class="w-full grid grid-cols-[20%_1fr_20%] items-center gap-4">
+      <div
+        v-if="!props.profile"
+        class="w-full grid grid-cols-[20%_1fr_20%] items-center gap-4"
+      >
+        <UiSkeleton :class="cn('w-40 h-40 rounded-full')" />
+
+        <div class="block space-y-2">
+          <UiSkeleton :class="cn('w-48 h-8')" />
+          <UiSkeleton :class="cn('w-56 h-6')" />
+          <UiSkeleton :class="cn('w-96 h-14')" />
+        </div>
+
+        <div class="profile-cta">
+          <UiSkeleton :class="cn('w-24 h-8')" />
+        </div>
+      </div>
+
+      <div
+        v-else
+        class="w-full grid grid-cols-[20%_1fr_20%] items-center gap-4"
+      >
         <div class="flex justify-center">
           <NuxtImg
-            src="https://dl.dropbox.com/scl/fi/xpzps77me2votw6y204ny/avatar-2.png?rlkey=fcr27tau2wffcugzlxq41bi26&st=82hsf9kj&dl=0"
+            :src="
+              props.profile?.avatar ??
+              'https://via.assets.so/img.jpg?w=800&h=400&tc=#cecece&bg=#cecece'
+            "
             class="w-40 h-40 rounded-full object-cover"
             alt="profile-avatar"
           />
         </div>
+
         <div class="block">
           <h1
             class="font-bold tracking-tight text-2xl leading-normal text-raisin-black line-clamp-1"
           >
-            John Doe
+            {{ props.profile?.fullname ?? "-" }}
           </h1>
           <p
             class="text-base font-medium text-raisin-black tracking-tight mt-1"
           >
-            dewiratnaiswara99@gmail.com
+            {{ props.profile?.email ?? "-" }}
           </p>
           <p
             class="text-quartz font-medium text-base leading-normal mt-4 line-clamp-3"
           >
-            Avid reader and aspiring writer. Lover of mysteries, thrillers, and
-            sci-fi. Coffee enthusiast and nature explorer. Always on the lookout
-            for new stories and adventures.
+            {{ props.profile?.bio ?? "-" }}
           </p>
         </div>
 
@@ -50,6 +72,12 @@
   </section>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import type { ProfileResponse } from "~/composables/services/useAuthService";
 
-<style lang=""></style>
+interface Props {
+  profile: ProfileResponse | null;
+}
+
+const props = defineProps<Props>();
+</script>
