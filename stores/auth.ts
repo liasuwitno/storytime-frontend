@@ -1,4 +1,8 @@
 import { defineStore } from "pinia";
+import {
+  useAuthService,
+  type ProfileResponse,
+} from "~/composables/services/useAuthService";
 
 interface CredentialsPayload {
   session_in: number;
@@ -7,7 +11,7 @@ interface CredentialsPayload {
 
 export const useAuthenticationStore = defineStore("auth", {
   state: () => ({
-    userProfile: null,
+    userProfile: null as ProfileResponse | null,
     token: "",
     session_at: 0,
   }),
@@ -31,7 +35,6 @@ export const useAuthenticationStore = defineStore("auth", {
         path: "/",
       });
 
-      // Update state lokal
       this.token = credential.token ?? "";
       this.session_at = credential.session_in ?? 0;
     },
@@ -45,6 +48,29 @@ export const useAuthenticationStore = defineStore("auth", {
       this.token = "";
       this.session_at = 0;
       this.userProfile = null;
+    },
+
+    setProfile(profile: ProfileResponse | null) {
+      if (!profile) return;
+
+      this.userProfile = profile;
+    },
+
+    async loadProfile() {
+      const { getProfile } = useAuthService();
+
+      try {
+        const response = await getProfile();
+        if (response?.code === CODE_OK && response?.data) {
+          this.setProfile(response.data);
+
+          return true;
+        }
+
+        return false;
+      } catch (error) {
+        console.error("[ERROR PROFILE] : ", error);
+      }
     },
   },
   getters: {

@@ -26,6 +26,7 @@
         :total="totalPages"
         :sibling-count="1"
         show-edges
+        :items-per-page="1"
         :default-page="currentPage"
       >
         <PaginationList v-slot="{ items }" class="flex items-center gap-1">

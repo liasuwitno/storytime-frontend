@@ -18,7 +18,10 @@
       "
     >
       <div :class="cn('text-xl font-bold tracking-tight')">
-        <NuxtLink to="/" :class="cn('text-white md:text-gray-900')">
+        <NuxtLink
+          to="/"
+          :class="cn('text-white md:text-gray-900 cursor-pointer')"
+        >
           <NuxtImg src="/images/storytime.png" class="h-9" alt="storytime" />
         </NuxtLink>
       </div>
@@ -27,13 +30,13 @@
         <UiPopover>
           <UiPopoverTrigger as-child>
             <button type="button" class="relative">
-              <Bell />
+              <Bell :size="24" />
 
               <div
                 v-if="messages?.length > 0"
                 :class="
                   cn(
-                    'absolute -top-2 -right-2 h-5 w-5',
+                    'absolute -top-1.5 -right-1.5 h-4 w-4',
                     'rounded-full bg-red-500 flex items-center justify-center'
                   )
                 "
@@ -92,7 +95,53 @@
           </UiPopoverContent>
         </UiPopover>
 
-        <div :class="cn('space-x-2')">
+        <div
+          v-if="isLoggedIn && profileUser"
+          class="flex items-center space-x-1.5 overflow-hidden"
+        >
+          <NuxtImg
+            :src="
+              profileUser?.avatar ??
+              'https://via.assets.so/img.jpg?w=800&h=400&tc=#cecece&bg=#cecece'
+            "
+            :alt="profileUser?.fullname"
+            class="size-10 rounded-full"
+          />
+
+          <p
+            :class="
+              cn(
+                'text-base text-raisin-black font-semibold tracking-tight',
+                'max-w-40 w-full line-clamp-1'
+              )
+            "
+          >
+            {{ profileUser?.fullname ?? "-" }}
+          </p>
+
+          <UiMenubar :class="cn('border-none')">
+            <UiMenubarMenu>
+              <UiMenubarTrigger :class="cn('px-0 py-0 cursor-pointer')">
+                <ChevronDown />
+              </UiMenubarTrigger>
+              <UiMenubarContent>
+                <UiMenubarItem>
+                  <NuxtLink to="/profile" :class="cn('font-semibold')">
+                    My Profile
+                  </NuxtLink>
+                </UiMenubarItem>
+                <UiMenubarSeparator />
+                <UiMenubarItem>
+                  <button type="button" :class="cn('font-semibold')">
+                    Logout
+                  </button>
+                </UiMenubarItem>
+              </UiMenubarContent>
+            </UiMenubarMenu>
+          </UiMenubar>
+        </div>
+
+        <div v-else :class="cn('space-x-2')">
           <UiButton
             type="button"
             @click="redirectToRegister"
@@ -124,12 +173,17 @@
 import { navigateTo } from "#app";
 
 import { cn } from "@/utils";
-import { Bell } from "lucide-vue-next";
+import { Bell, ChevronDown } from "lucide-vue-next";
 import { UiPopover } from "#components";
 import { usePusherNotifications } from "~/composables/services/useNotifications";
+import { useAuthenticationStore } from "~/stores/auth";
 
 const config = useRuntimeConfig();
-const isScrolled = ref(false);
+const isScrolled = ref<boolean>(false);
+
+const store = useAuthenticationStore();
+const profileUser = computed(() => store.userProfile);
+const isLoggedIn = computed(() => store.isLoggedIn);
 
 const messages = [
   {

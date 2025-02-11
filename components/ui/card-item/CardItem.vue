@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full flex-col justify-between">
+  <div class="flex h-full flex-col cursor-pointer justify-between">
     <figure class="relative group h-full overflow-hidden rounded-lg">
       <UiButton
         v-if="isMultipleMethod"
@@ -89,7 +89,7 @@
         <p
           :class="cn('text-sm line-clamp-3 text-gray-600 leading-normal h-16')"
         >
-          {{ story?.content ?? "-" }}
+          {{ removeTagElements(story?.content) ?? "..." }}
         </p>
       </div>
 

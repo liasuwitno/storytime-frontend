@@ -35,3 +35,10 @@ export function changeToNormalText(
       return text;
   }
 }
+
+export function removeTagElements(text: string): string {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(text, "text/html");
+
+  return doc.body.textContent || "";
+}

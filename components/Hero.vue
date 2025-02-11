@@ -8,12 +8,15 @@
     "
   >
     <h2
-      v-if="props.hasName"
+      v-if="profileUser"
       :class="
-        cn('font-mono text-raisin-black text-6xl font-bold tracking-tight')
+        cn(
+          'font-mono text-raisin-black text-6xl font-bold tracking-tight',
+          'max-w-[420px] w-full line-clamp-1'
+        )
       "
     >
-      Hi, {{ props.authenticatedName ?? "" }}
+      Hi, {{ profileUser?.fullname ?? "" }}
     </h2>
     <h1
       :class="
@@ -50,11 +53,8 @@
 <script setup lang="ts">
 import { cn } from "@/utils";
 import { Search } from "lucide-vue-next";
+import { useAuthenticationStore } from "~/stores/auth";
 
-interface Props {
-  hasName?: boolean;
-  authenticatedName?: string | null;
-}
-
-const props = defineProps<Props>();
+const store = useAuthenticationStore();
+const profileUser = computed(() => store.userProfile);
 </script>

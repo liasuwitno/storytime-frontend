@@ -78,10 +78,6 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  middleware: ["auth"],
-});
-
 import vueFilePond from "vue-filepond";
 
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";

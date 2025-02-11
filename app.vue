@@ -8,4 +8,14 @@
   </NuxtLayout>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useAuthenticationStore } from "./stores/auth";
+
+const authStore = useAuthenticationStore();
+
+onMounted(() => {
+  if (authStore.isLoggedIn) {
+    authStore.loadProfile();
+  }
+});
+</script>

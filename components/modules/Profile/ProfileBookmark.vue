@@ -26,6 +26,7 @@
         :total="totalPages"
         :sibling-count="1"
         show-edges
+        :items-per-page="1"
         :default-page="currentPage"
       >
         <PaginationList v-slot="{ items }" class="flex items-center gap-1">
@@ -108,12 +109,10 @@ const userBookmarkMap = ref<Record<number, StoryBookmarkResponse["bookmarks"]>>(
   {}
 );
 
-// ** Pastikan `userBookmarks` hanya memiliki data jika memang ada **
 const userBookmarks = computed(
   () => userBookmarkMap.value[currentPage.value] || []
 );
 
-// ** Tambahkan computed untuk mengecek apakah ada data bookmark **
 const hasBookmarks = computed(
   () => !isLoading.value && userBookmarks.value.length > 0
 );

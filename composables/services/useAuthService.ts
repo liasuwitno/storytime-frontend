@@ -32,11 +32,21 @@ export interface ProfileResponse {
   bio: string;
 }
 
+export interface UpdateProfilePayload {
+  fullname: string;
+  old_password: string;
+  new_password: string;
+  new_password_confirmation: string;
+  bio: string;
+  avatar: string;
+}
+
 interface ReturnUseAuthService {
   login: (payload: LoginPayload) => Promise<ApiResponse<LoginResponse | null>>;
   register: (payload: RegisterPayload) => Promise<ApiResponse<null>>;
   logOut: () => Promise<ApiResponse<null>>;
   getProfile: () => Promise<ApiResponse<ProfileResponse>>;
+  updateProfile: (payload: UpdateProfilePayload) => Promise<ApiResponse<null>>;
 }
 
 export const useAuthService = (): ReturnUseAuthService => {
@@ -83,10 +93,25 @@ export const useAuthService = (): ReturnUseAuthService => {
     return response;
   };
 
+  const updateProfile = async (
+    payload: UpdateProfilePayload
+  ): Promise<ApiResponse<null>> => {
+    const response = await $request.put<
+      UpdateProfilePayload,
+      ApiResponse<null>
+    >({
+      url: "/update-profile",
+      body: payload,
+    });
+
+    return response;
+  };
+
   return {
     login,
     register,
     logOut,
     getProfile,
+    updateProfile,
   };
 };

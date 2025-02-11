@@ -24,6 +24,7 @@
             })
           "
           :wrapperClassName="cn('mb-6')"
+          :disabled="isLoading"
           v-model="formLoginData.email"
           isRequired
         />
@@ -43,6 +44,7 @@
           :wrapperClassName="cn('mb-6')"
           :hasError="!!errorMessage"
           v-model="formLoginData.password"
+          :disabled="isLoading"
           :inputMessage="
             !!errorMessage
               ? errorMessage
@@ -100,6 +102,7 @@ import { reactive } from "vue";
 
 import {
   type LoginPayload,
+  type LoginResponse,
   useAuthService,
 } from "~/composables/services/useAuthService";
 import type { ApiResponse } from "~/types/response";
@@ -109,7 +112,7 @@ import { LoaderCircle } from "lucide-vue-next";
 const isLoading = ref<boolean>(false);
 const errorMessage = ref<string | null>(null);
 
-const { login } = useAuthService();
+const { login, getProfile } = useAuthService();
 
 const authenticationStore = useAuthenticationStore();
 const formLoginData = reactive({
@@ -129,7 +132,43 @@ const clearForm = (): void => {
   formLoginData.password = "";
 };
 
-const onSubmit = async (event: FormDataEvent): Promise<void> => {
+const performLogin = async (payload: LoginPayload) => {
+  try {
+    const response = await login(payload);
+    return response;
+  } catch (error: any) {
+    const dataError = error?.data as ApiResponse<null>;
+    errorMessage.value = dataError?.message ?? "";
+
+    console.error({ error });
+    throw error;
+  }
+};
+
+const handleAuthentication = (result: LoginResponse): void => {
+  const expiresIn = result
+    ? new Date(result?.session?.expires_at).getTime()
+    : 0;
+
+  authenticationStore.setCredentials({
+    session_in: expiresIn,
+    token: result?.token ?? "",
+  });
+};
+
+const fetchUserProfile = async (): Promise<void> => {
+  const responseProfile = await getProfile();
+  const dataProfile = responseProfile?.data;
+
+  if (dataProfile) {
+    authenticationStore.setProfile(dataProfile);
+
+    clearForm();
+    navigateTo("/");
+  }
+};
+
+const onSubmit = async (event: Event): Promise<void> => {
   event.preventDefault();
 
   const payload = getPayload();
@@ -137,29 +176,19 @@ const onSubmit = async (event: FormDataEvent): Promise<void> => {
   try {
     isLoading.value = true;
 
-    const response = await login(payload);
+    const response = await performLogin(payload);
 
     if (response?.code === CODE_OK) {
       const result = response?.data;
-      const expiresIn = result
-        ? new Date(result?.session?.expires_at).getTime()
-        : 0;
 
-      authenticationStore.setCredentials({
-        session_in: expiresIn,
-        token: result?.token ?? "",
-      });
-
-      clearForm();
-      navigateTo("/");
+      if (result?.token) {
+        handleAuthentication(result);
+        await fetchUserProfile();
+      }
     }
-
+  } catch (error) {
     isLoading.value = false;
-  } catch (error: any) {
-    const dataError = error?.data as ApiResponse<null>;
-    errorMessage.value = dataError?.message ?? "";
-
-    console.error({ error });
+  } finally {
     isLoading.value = false;
   }
 };

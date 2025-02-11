@@ -11,6 +11,7 @@ const props = defineProps<{
   inputClass?: string;
   iconLeft?: any;
   iconRight?: any;
+  disabled?: boolean;
 
   name?: string;
   hasLabel?: boolean;
@@ -69,6 +70,7 @@ const inputType = computed(() => props.type || "text");
         :type="
           props.hasPassword ? (showPassword ? 'text' : 'password') : inputType
         "
+        :disabled="props.disabled"
         :required="props.isRequired"
       />
 

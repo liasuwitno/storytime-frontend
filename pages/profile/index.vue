@@ -43,33 +43,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import ModulesProfileMyStory from "~/components/modules/Profile/ProfileMyStory.vue";
 import ModulesProfileBookmark from "~/components/modules/Profile/ProfileBookmark.vue";
 
-import {
-  useAuthService,
-  type ProfileResponse,
-} from "~/composables/services/useAuthService";
+import { useAuthenticationStore } from "~/stores/auth";
 
-const isLoading = ref<boolean>(false);
-const profileUser = ref<ProfileResponse | null>(null);
-
-const { getProfile } = useAuthService();
-
-const getProfileUser = async (): Promise<void> => {
-  try {
-    isLoading.value = true;
-
-    const response = await getProfile();
-
-    if (response?.code === CODE_OK) {
-      const data = response?.data as ProfileResponse;
-      profileUser.value = data;
-    }
-
-    isLoading.value = false;
-  } catch (error) {
-    isLoading.value = false;
-    console.error({ error });
-  }
-};
+const store = useAuthenticationStore();
+const profileUser = computed(() => store.userProfile);
 
 const TABS = [
   {
@@ -81,8 +58,4 @@ const TABS = [
     name: "Bookmark",
   },
 ];
-
-onMounted(() => {
-  if (!profileUser.value) getProfileUser();
-});
 </script>

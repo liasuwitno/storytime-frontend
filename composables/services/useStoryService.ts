@@ -39,6 +39,7 @@ export interface StoryPayload {
   body: string;
   images: string[];
   category_id: number;
+  identifier: string,
 }
 
 export interface LandingStoryResponse {
