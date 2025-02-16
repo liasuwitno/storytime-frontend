@@ -95,8 +95,12 @@
           </UiPopoverContent>
         </UiPopover>
 
+        <div v-if="isLoadingProfileUser">
+          <UiSkeleton :class="cn('w-40 h-8')" />
+        </div>
+
         <div
-          v-if="isLoggedIn && profileUser"
+          v-else-if="isLoggedIn && profileUser"
           class="flex items-center space-x-1.5 overflow-hidden"
         >
           <NuxtImg
@@ -126,13 +130,19 @@
               </UiMenubarTrigger>
               <UiMenubarContent>
                 <UiMenubarItem>
-                  <NuxtLink to="/profile" :class="cn('font-semibold')">
+                  <NuxtLink
+                    to="/profile"
+                    :class="cn('font-semibold w-full block')"
+                  >
                     My Profile
                   </NuxtLink>
                 </UiMenubarItem>
                 <UiMenubarSeparator />
                 <UiMenubarItem>
-                  <button type="button" :class="cn('font-semibold')">
+                  <button
+                    type="button"
+                    :class="cn('font-semibold w-full text-left')"
+                  >
                     Logout
                   </button>
                 </UiMenubarItem>
@@ -144,7 +154,6 @@
         <div v-else :class="cn('space-x-2')">
           <UiButton
             type="button"
-            @click="redirectToRegister"
             variant="outline"
             size="default"
             :class="
@@ -153,16 +162,19 @@
                 'hover:text-white hover:bg-olive-drab'
               )
             "
-            >Register</UiButton
+            @click="redirectToRegister"
           >
+            Register
+          </UiButton>
           <UiButton
             type="button"
-            @click="redirectToLogin"
-            size="default"
             variant="default"
+            size="default"
             :class="cn('bg-olive-drab', 'hover:bg-olive-drab/90')"
-            >Login</UiButton
+            @click="redirectToLogin"
           >
+            Login
+          </UiButton>
         </div>
       </div>
     </nav>
@@ -183,6 +195,8 @@ const isScrolled = ref<boolean>(false);
 
 const store = useAuthenticationStore();
 const profileUser = computed(() => store.userProfile);
+const isLoadingProfileUser = computed(() => store.isLoadingProfile);
+
 const isLoggedIn = computed(() => store.isLoggedIn);
 
 const messages = [

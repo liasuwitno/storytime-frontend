@@ -24,12 +24,13 @@
         :story="story"
         :variant="props.variant"
         :url="`/stories/${story.slug}`"
-        :isBookmarked="story.is_bookmark"
-        :index="index"
-        :methods="{
-          bookmarkOnClick: () => {
-            console.log('ASU 2');
-          },
+        :enabled-buttons="['bookmark']"
+        :bookmarked="{
+          is_bookmark: bookmarkStore.isBookmarked(story.story_id),
+          is_loading: bookmarkStore.isLoading(story.story_id),
+        }"
+        :actions="{
+          bookmark: () => props.bookmarked?.action?.(story),
         }"
       />
     </div>
@@ -54,12 +55,13 @@
         :story="story"
         :variant="props.variant"
         :url="`/stories/${story.slug}`"
-        :isBookmarked="story.is_bookmark"
-        :index="index"
-        :methods="{
-          bookmarkOnClick: () => {
-            console.log('ASU 1');
-          },
+        :enabled-buttons="['bookmark']"
+        :bookmarked="{
+          is_bookmark: bookmarkStore.isBookmarked(story.story_id),
+          is_loading: bookmarkStore.isLoading(story.story_id),
+        }"
+        :actions="{
+          bookmark: () => props.bookmarked?.action?.(story),
         }"
       />
     </div>
@@ -67,17 +69,22 @@
 </template>
 
 <script setup lang="ts">
-import type { StoryResponse } from "~/composables/services/useStoryService";
-import { cn } from "@/utils";
 import Flicking from "@egjs/vue3-flicking";
+import type { StoryResponse } from "~/composables/services/useStoryService";
+
 import "@egjs/vue3-flicking/dist/flicking-inline.css";
-import { ref, onMounted, nextTick } from "vue";
+import { useBookmarkStore } from "~/stores/bookmark";
 
 const props = defineProps<{
   isSlider?: boolean;
   variant: "list" | "grid";
+  bookmarked?: {
+    action: (story: StoryResponse) => void;
+  };
   stories?: StoryResponse[];
 }>();
+
+const bookmarkStore = useBookmarkStore();
 
 const isInitialized = ref(false);
 const flickingRef = ref<InstanceType<typeof Flicking> | null>(null);

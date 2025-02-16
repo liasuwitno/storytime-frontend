@@ -12,6 +12,7 @@ interface CredentialsPayload {
 export const useAuthenticationStore = defineStore("auth", {
   state: () => ({
     userProfile: null as ProfileResponse | null,
+    isLoadingProfile: false,
     token: "",
     session_at: 0,
   }),
@@ -60,15 +61,20 @@ export const useAuthenticationStore = defineStore("auth", {
       const { getProfile } = useAuthService();
 
       try {
+        this.isLoadingProfile = true;
+
         const response = await getProfile();
         if (response?.code === CODE_OK && response?.data) {
           this.setProfile(response.data);
 
+          this.isLoadingProfile = false;
           return true;
         }
 
+        this.isLoadingProfile = false;
         return false;
       } catch (error) {
+        this.isLoadingProfile = false;
         console.error("[ERROR PROFILE] : ", error);
       }
     },

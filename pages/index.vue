@@ -5,7 +5,7 @@
     <LayoutsCommonLayout container="lg">
       <Hero />
 
-      <template v-if="!isLoading">
+      <template v-if="!isLoadingLatest">
         <section>
           <UiSectionBar
             title="Latest Story"
@@ -13,27 +13,14 @@
             isShowExploreMore
           />
 
-          <StoryModuleLayout :stories="latestStory" variant="list" isSlider />
-        </section>
-
-        <section v-for="(story, index) in stories" :key="story?.category_name">
-          <UiSectionBar
-            :title="story?.category_name ?? '-'"
-            redirectLink="/"
-            :isShowExploreMore="story?.stories?.length > 0"
-          />
-
           <StoryModuleLayout
-            v-if="story?.stories?.length > 0"
-            :stories="story?.stories"
-            :variant="index % 2 !== 1 ? 'grid' : 'list'"
+            isSlider
+            variant="list"
+            :bookmarked="{
+              action: handleBookmark,
+            }"
+            :stories="latestStory"
           />
-
-          <div v-else class="flex items-center justify-center mt-8 py-10">
-            <p class="text-base font-medium text-raisin-black">
-              No stories found in this {{ story?.category_name ?? "category" }}
-            </p>
-          </div>
         </section>
       </template>
 
@@ -50,7 +37,34 @@
             <UiSkeletonCardSkeleton v-for="j in 4" :key="j" variant="list" />
           </div>
         </section>
+      </template>
 
+      <template v-if="!isLoading">
+        <section v-for="(story, index) in stories" :key="story?.category_name">
+          <UiSectionBar
+            :title="story?.category_name ?? '-'"
+            redirectLink="/"
+            :isShowExploreMore="story?.stories?.length > 0"
+          />
+
+          <StoryModuleLayout
+            v-if="story?.stories?.length > 0"
+            :stories="story?.stories"
+            :variant="index % 2 !== 1 ? 'grid' : 'list'"
+            :bookmarked="{
+              action: handleBookmark,
+            }"
+          />
+
+          <div v-else class="flex items-center justify-center mt-8 py-10">
+            <p class="text-base font-medium text-raisin-black">
+              No stories found in this {{ story?.category_name ?? "category" }}
+            </p>
+          </div>
+        </section>
+      </template>
+
+      <template v-else>
         <section v-for="i in 3" :key="i" class="mb-12">
           <div
             class="flex items-center justify-between pb-6 mb-2 border-b border-[#CCCCCC]"
@@ -93,17 +107,37 @@ import {
   type LandingStoryResponse,
   type StoryResponse,
 } from "~/composables/services/useStoryService";
+import { useBookmarkStore } from "~/stores/bookmark";
+
+const bookmarkStore = useBookmarkStore();
 
 const ACTIVE_CATEGORIES = ["Comedy", "Romance", "Horror"];
 const STORIES_PER_CATEGORY = 3;
 
+const isLoading = ref<boolean>(false);
+const isLoadingLatest = ref<boolean>(false);
+
 const latestStory = ref<StoryResponse[]>([]);
 const stories = ref<LandingStoryResponse[]>([]);
 const categories = ref<CategoriesResponse[]>([]);
-const isLoading = ref<boolean>(false);
 
-const { getLandingStories } = useStoryService();
+const { getLandingStories, getLatestStories } = useStoryService();
 const { getCategories: getAllCategories } = useCategoryService();
+
+const { toggleOptimisticBookmark, pendingBookmarks, handleBookmarkError } =
+  useBookmark();
+
+const handleBookmark = async (story: StoryResponse) => {
+  try {
+    pendingBookmarks.value.add(story.story_id);
+    toggleOptimisticBookmark(story);
+  } catch (error) {
+    console.error("[BOOKMARK_ERROR]:", error);
+    handleBookmarkError(story.story_id);
+  } finally {
+    pendingBookmarks.value.delete(story.story_id);
+  }
+};
 
 const getStories = async (): Promise<void> => {
   try {
@@ -113,31 +147,62 @@ const getStories = async (): Promise<void> => {
     if (response?.code === CODE_OK) {
       const storiesData = response.data as LandingStoryResponse[];
 
+      const initializeBookmarks = storiesData
+        ?.flatMap((story) => {
+          return story.stories?.flatMap((childStory) => {
+            if (childStory.is_bookmark) {
+              return {
+                story_id: childStory.story_id,
+                user_id: childStory.author.user_id,
+                is_bookmark: childStory.is_bookmark,
+              };
+            }
+
+            return [];
+          });
+        })
+        ?.filter((bookmark) => bookmark.is_bookmark);
+
+      bookmarkStore.initializeBookmarks(initializeBookmarks);
+
       stories.value = storiesData
         ?.filter((story) => ACTIVE_CATEGORIES.includes(story.category_name))
         ?.map((story) => ({
           ...story,
           stories: story.stories?.slice(0, STORIES_PER_CATEGORY),
         }));
-
-      latestStory.value = storiesData
-        ?.flatMap((story) =>
-          story.stories
-            ? story.stories.map((childStory) => ({
-                ...childStory,
-                category_name: story.category_name,
-              }))
-            : []
-        )
-        .sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        ) as StoryResponse[];
     }
   } catch (error) {
-    console.error("Error fetching stories:", error);
+    console.error("[STORIES]: ", error);
   } finally {
     isLoading.value = false;
+  }
+};
+
+const getLatest = async (): Promise<void> => {
+  try {
+    isLoadingLatest.value = true;
+    const response = await getLatestStories();
+
+    if (response?.code === CODE_OK) {
+      const storiesData = response.data as StoryResponse[];
+
+      const initializeBookmarks = storiesData
+        .map((story) => ({
+          story_id: story.story_id,
+          user_id: story.author.user_id,
+          is_bookmark: story.is_bookmark,
+        }))
+        ?.filter((bookmark) => bookmark.is_bookmark);
+
+      bookmarkStore.initializeBookmarks(initializeBookmarks);
+
+      latestStory.value = storiesData;
+    }
+  } catch (error) {
+    console.error("[LATEST]: ", error);
+  } finally {
+    isLoadingLatest.value = false;
   }
 };
 
@@ -160,10 +225,18 @@ const getCategories = async (): Promise<void> => {
   }
 };
 
-onMounted(async () => {
-  if (!stories.value?.length && !categories.value?.length) {
+const executeActions = async (): Promise<void> => {
+  try {
+    await getLatest();
+
     await Promise.all([getStories(), getCategories()]);
+  } catch (error) {
+    console.error("[EXECUTE_ACTIONS]: ", error);
   }
+};
+
+onMounted(() => {
+  executeActions();
 });
 </script>
 

@@ -12,11 +12,15 @@
         variant="list"
         :story="story"
         :url="`/stories/${story.slug}`"
-        :index="index"
-        :methods="{
-          bookmarkOnClick: () => {},
-          deleteOnClick: () => {},
-          updateOnClick: () => {},
+        :enabled-buttons="['delete', 'update']"
+        :bookmarked="{
+          is_bookmark: story.is_bookmark,
+          is_loading: false,
+        }"
+        :actions="{
+          bookmark: () => {},
+          delete: () => {},
+          update: () => {},
         }"
       />
     </div>

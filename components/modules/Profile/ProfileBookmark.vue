@@ -12,11 +12,13 @@
         variant="list"
         :story="story"
         :url="`/stories/${story.slug}`"
-        :index="index"
-        :methods="{
-          bookmarkOnClick: () => {},
-          deleteOnClick: () => {},
-          updateOnClick: () => {},
+        :enabled-buttons="['bookmark']"
+        :bookmarked="{
+          is_bookmark: bookmarkStore.isBookmarked(story.story_id),
+          is_loading: bookmarkStore.isLoading(story.story_id),
+        }"
+        :actions="{
+          bookmark: () => handleBookmark(story),
         }"
       />
     </div>
@@ -96,10 +98,14 @@ import { Button } from "@/components/ui/button";
 import {
   useStoryService,
   type StoryBookmarkResponse,
+  type StoryResponse,
 } from "~/composables/services/useStoryService";
-import { watchEffect, ref, computed } from "vue";
+import { useBookmarkStore } from "~/stores/bookmark";
 
+const bookmarkStore = useBookmarkStore();
 const { getUserBookmarks } = useStoryService();
+const { toggleOptimisticBookmark, pendingBookmarks, handleBookmarkError } =
+  useBookmark();
 
 const currentPage = ref<number>(1);
 const totalPages = ref<number>(1);
@@ -113,9 +119,42 @@ const userBookmarks = computed(
   () => userBookmarkMap.value[currentPage.value] || []
 );
 
-const hasBookmarks = computed(
-  () => !isLoading.value && userBookmarks.value.length > 0
-);
+const hasBookmarks = computed(() => {
+  return (
+    !isLoading.value &&
+    userBookmarks.value.length > 0 &&
+    Object.keys(userBookmarkMap.value).length > 0
+  );
+});
+const handleBookmark = async (story: StoryResponse) => {
+  try {
+    pendingBookmarks.value.add(story.story_id);
+    const isCurrentlyBookmarked = bookmarkStore.isBookmarked(story.story_id);
+
+    if (isCurrentlyBookmarked) {
+      userBookmarkMap.value[currentPage.value] = userBookmarkMap.value[
+        currentPage.value
+      ].filter((bookmark) => bookmark.story_id !== story.story_id);
+    }
+
+    toggleOptimisticBookmark(story);
+
+    if (
+      userBookmarkMap.value[currentPage.value].length === 0 &&
+      currentPage.value > 1
+    ) {
+      currentPage.value--;
+      await fetchUserBookmarks(currentPage.value);
+    }
+  } catch (error) {
+    console.error("[BOOKMARK_ERROR]:", error);
+    handleBookmarkError(story.story_id);
+
+    await fetchUserBookmarks(currentPage.value);
+  } finally {
+    pendingBookmarks.value.delete(story.story_id);
+  }
+};
 
 const fetchUserBookmarks = async (page: number): Promise<void> => {
   if (userBookmarkMap.value[page]) {
@@ -129,6 +168,17 @@ const fetchUserBookmarks = async (page: number): Promise<void> => {
     if (response?.code === 200) {
       const data = response.data as StoryBookmarkResponse;
       userBookmarkMap.value[page] = data.bookmarks ?? [];
+
+      const initializeBookmarks = data.bookmarks
+        .map((story) => ({
+          story_id: story.story_id,
+          user_id: story.author.user_id,
+          is_bookmark: story.is_bookmark,
+        }))
+        ?.filter((bookmark) => bookmark.is_bookmark);
+
+      bookmarkStore.initializeBookmarks(initializeBookmarks);
+
       totalPages.value = data.pagination.total_pages;
     } else {
       userBookmarkMap.value[page] = [];

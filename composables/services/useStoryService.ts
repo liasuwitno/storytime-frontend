@@ -2,10 +2,11 @@ import type { Pagination } from "~/types";
 import type { ApiResponse } from "~/types/response";
 
 export interface StoryResponse {
-  story_id: number;
+  story_id: string;
   title: string;
   slug: string;
   author: {
+    user_id: string;
     name: string;
     avatar: string | null;
   };
@@ -39,7 +40,7 @@ export interface StoryPayload {
   body: string;
   images: string[];
   category_id: number;
-  identifier: string,
+  identifier: string;
 }
 
 export interface LandingStoryResponse {
@@ -65,6 +66,7 @@ interface ReturnUseStoryService {
     page: number;
     perPage: number;
   }) => Promise<ApiResponse<StoryBookmarkResponse>>;
+  getLatestStories: () => Promise<ApiResponse<StoryResponse[]>>;
 }
 
 export const useStoryService = (): ReturnUseStoryService => {
@@ -75,6 +77,14 @@ export const useStoryService = (): ReturnUseStoryService => {
   > => {
     const response = await $request.get<ApiResponse<LandingStoryResponse[]>>({
       url: "/story-categories",
+    });
+
+    return response;
+  };
+
+  const getLatestStories = async (): Promise<ApiResponse<StoryResponse[]>> => {
+    const response = await $request.get<ApiResponse<StoryResponse[]>>({
+      url: "/latest-stories",
     });
 
     return response;
@@ -162,5 +172,6 @@ export const useStoryService = (): ReturnUseStoryService => {
     deleteStory,
     getUserStories,
     getUserBookmarks,
+    getLatestStories,
   };
 };

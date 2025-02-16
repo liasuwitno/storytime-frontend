@@ -9,7 +9,7 @@ export interface BookmarkListResponse {}
 
 export interface BookmarkPayload {
   user_id: string;
-  story_id: number;
+  story_id: string;
 }
 
 export const useBookmarkService = (): ReturnUseBookmarkService => {
