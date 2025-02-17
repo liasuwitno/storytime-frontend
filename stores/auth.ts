@@ -40,7 +40,7 @@ export const useAuthenticationStore = defineStore("auth", {
       this.session_at = credential.session_in ?? 0;
     },
 
-    logout() {
+    logoutLocal(): void {
       const { setCookie } = useCookies();
 
       setCookie({ key: "session", value: "", expires: -1, path: "/" });

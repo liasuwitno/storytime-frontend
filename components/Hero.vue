@@ -37,6 +37,8 @@
         placeholder="Search Story"
         :inputClass="cn('py-6 px-4 font-medium text-sm')"
         :iconRight="Search"
+        v-model="formData.search"
+        @keyup.enter="handleSearch"
       />
     </div>
 
@@ -57,4 +59,15 @@ import { useAuthenticationStore } from "~/stores/auth";
 
 const store = useAuthenticationStore();
 const profileUser = computed(() => store.userProfile);
+
+const formData = reactive({
+  search: "",
+});
+
+const handleSearch = () => {
+  if (formData.search.trim()) {
+    const encodedSearch = encodeURIComponent(formData.search.trim());
+    navigateTo(`/stories?search=${encodedSearch}`);
+  }
+};
 </script>

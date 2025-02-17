@@ -21,7 +21,7 @@ export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig();
   const { getCookies } = useCookies();
 
-  const { logout } = useAuthenticationStore();
+  const store = useAuthenticationStore();
 
   const APP_ENV = config.public.NUXT_API_ENV;
   const API_BASE_DEV = config.public.NUXT_PUBLIC_API_BASE_DEV;
@@ -48,7 +48,7 @@ export default defineNuxtPlugin(() => {
       });
 
       if ((response as ApiResponse<null>)?.code === 401) {
-        logout();
+        store.logoutLocal();
         navigateTo("/login");
 
         return {} as R;

@@ -129,23 +129,80 @@
                 <ChevronDown />
               </UiMenubarTrigger>
               <UiMenubarContent>
-                <UiMenubarItem>
-                  <NuxtLink
-                    to="/profile"
-                    :class="cn('font-semibold w-full block')"
-                  >
-                    My Profile
-                  </NuxtLink>
+                <UiMenubarItem
+                  @click="navigateTo('/profile')"
+                  :class="cn('cursor-pointer')"
+                >
+                  <p :class="cn('font-semibold w-full block')">My Profile</p>
                 </UiMenubarItem>
                 <UiMenubarSeparator />
-                <UiMenubarItem>
-                  <button
-                    type="button"
-                    :class="cn('font-semibold w-full text-left')"
-                  >
-                    Logout
-                  </button>
-                </UiMenubarItem>
+
+                <UiDialog>
+                  <UiDialogTrigger as-child>
+                    <button
+                      type="button"
+                      :class="
+                        cn(
+                          'font-semibold w-full text-left text-sm px-2.5 py-1.5'
+                        )
+                      "
+                    >
+                      Logout
+                    </button>
+
+                    <UiDialogContent class="sm:max-w-[400px]">
+                      <UiDialogHeader>
+                        <UiDialogTitle
+                          :class="
+                            cn('font-semibold text-3xl text-center', 'mb-1')
+                          "
+                        >
+                          Logout
+                        </UiDialogTitle>
+                        <UiDialogDescription
+                          :class="cn('text-center text-base font-medium')"
+                        >
+                          Are you sure want to logout?
+                        </UiDialogDescription>
+                      </UiDialogHeader>
+
+                      <UiDialogFooter class="mx-auto space-x-2 mt-4">
+                        <UiDialogClose asChild>
+                          <UiButton
+                            type="button"
+                            variant="outline"
+                            size="lg"
+                            :disabled="isLoadingLogout"
+                            :class="
+                              cn(
+                                'text-olive-drab border-olive-drab border-2 text-base',
+                                'hover:text-white hover:bg-olive-drab'
+                              )
+                            "
+                          >
+                            Cancel
+                          </UiButton>
+                        </UiDialogClose>
+
+                        <UiButton
+                          type="button"
+                          variant="default"
+                          size="lg"
+                          @click="handleLogout"
+                          :disabled="isLoadingLogout"
+                          :class="
+                            cn(
+                              'bg-olive-drab text-base',
+                              'hover:bg-olive-drab/90'
+                            )
+                          "
+                        >
+                          {{ isLoadingLogout ? "Logging out..." : "Logout" }}
+                        </UiButton>
+                      </UiDialogFooter>
+                    </UiDialogContent>
+                  </UiDialogTrigger>
+                </UiDialog>
               </UiMenubarContent>
             </UiMenubarMenu>
           </UiMenubar>
@@ -189,15 +246,22 @@ import { Bell, ChevronDown } from "lucide-vue-next";
 import { UiPopover } from "#components";
 import { usePusherNotifications } from "~/composables/services/useNotifications";
 import { useAuthenticationStore } from "~/stores/auth";
+import { useAuthService } from "~/composables/services/useAuthService";
+import { useBookmarkStore } from "~/stores/bookmark";
 
 const config = useRuntimeConfig();
 const isScrolled = ref<boolean>(false);
 
 const store = useAuthenticationStore();
+const storeBookmark = useBookmarkStore();
+
 const profileUser = computed(() => store.userProfile);
 const isLoadingProfileUser = computed(() => store.isLoadingProfile);
 
+const { logOut } = useAuthService();
+
 const isLoggedIn = computed(() => store.isLoggedIn);
+const isLoadingLogout = ref<boolean>(false);
 
 const messages = [
   {
@@ -225,6 +289,24 @@ const redirectToLogin = (): void => {
 
 const redirectToRegister = (): void => {
   navigateTo("/register");
+};
+
+const handleLogout = async (): Promise<void> => {
+  try {
+    isLoadingLogout.value = true;
+    const response = await logOut();
+
+    if (response.code === CODE_OK) {
+      store.logoutLocal();
+      storeBookmark.setResetBookmarks();
+    }
+
+    isLoadingLogout.value = false;
+  } catch (error) {
+    console.error("[ERROR LOGOUT] : ", error);
+  } finally {
+    isLoadingLogout.value = false;
+  }
 };
 
 onMounted(() => {

@@ -1,6 +1,5 @@
 import { useBookmarkService } from "~/composables/services/useBookmarkService";
 
-// in bookmark store
 interface BookmarkState {
   bookmarkedStories: Array<{ story_id: string; user_id: string }>;
   loadingStates: { [key: string]: boolean };
@@ -32,6 +31,10 @@ export const useBookmarkStore = defineStore("bookmark", {
 
     initializeBookmarks(stories: any[]) {
       this.bookmarkedStories = [...stories, ...this.bookmarkedStories];
+    },
+
+    setResetBookmarks() {
+      this.bookmarkedStories = [];
     },
 
     async toggleBookmark(payload: { story_id: string; user_id: string }) {

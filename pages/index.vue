@@ -9,7 +9,7 @@
         <section>
           <UiSectionBar
             title="Latest Story"
-            redirectLink="/stories"
+            redirectLink="/stories/categories/all-story"
             isShowExploreMore
           />
 
@@ -84,7 +84,7 @@
           <NuxtLink
             v-for="category in categories"
             :key="category.id"
-            :to="`/stories/${category.name}`"
+            :to="`/stories/categories/${String(category.name).toLowerCase()}`"
             class="bg-[#F0F5ED] px-8 py-7 rounded-md hover:bg-[#F0F5ED]/50"
           >
             <p class="text-[#466543] font-medium text-base tracking-tight">
