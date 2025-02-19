@@ -23,7 +23,7 @@
         hasCategory
         :story="story"
         :variant="props.variant"
-        :url="`/stories/${story.slug}`"
+        :url="`/stories/detail/${story.slug}`"
         :enabled-buttons="['bookmark']"
         :bookmarked="{
           is_bookmark: bookmarkStore.isBookmarked(story.story_id),
@@ -53,8 +53,9 @@
       <UiCardItem
         type="normal"
         :story="story"
+        :has-category="props.isShowCategory"
         :variant="props.variant"
-        :url="`/stories/${story.slug}`"
+        :url="`/stories/detail/${story.slug}`"
         :enabled-buttons="['bookmark']"
         :bookmarked="{
           is_bookmark: bookmarkStore.isBookmarked(story.story_id),
@@ -82,6 +83,7 @@ const props = defineProps<{
     action: (story: StoryResponse) => void;
   };
   stories?: StoryResponse[];
+  isShowCategory?: boolean;
 }>();
 
 const bookmarkStore = useBookmarkStore();

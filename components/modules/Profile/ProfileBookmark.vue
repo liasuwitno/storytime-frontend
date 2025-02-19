@@ -11,7 +11,7 @@
         isMultipleMethod
         variant="list"
         :story="story"
-        :url="`/stories/${story.slug}`"
+        :url="`/stories/detail/${story.slug}`"
         :enabled-buttons="['bookmark']"
         :bookmarked="{
           is_bookmark: bookmarkStore.isBookmarked(story.story_id),
@@ -101,8 +101,11 @@ import {
   type StoryResponse,
 } from "~/composables/services/useStoryService";
 import { useBookmarkStore } from "~/stores/bookmark";
+import { useAuthenticationStore } from "~/stores/auth";
 
 const bookmarkStore = useBookmarkStore();
+const authStore = useAuthenticationStore();
+
 const { getUserBookmarks } = useStoryService();
 const { toggleOptimisticBookmark, pendingBookmarks, handleBookmarkError } =
   useBookmark();
@@ -115,6 +118,8 @@ const userBookmarkMap = ref<Record<number, StoryBookmarkResponse["bookmarks"]>>(
   {}
 );
 
+const userProfile = computed(() => authStore.userProfile);
+
 const userBookmarks = computed(
   () => userBookmarkMap.value[currentPage.value] || []
 );
@@ -126,7 +131,10 @@ const hasBookmarks = computed(() => {
     Object.keys(userBookmarkMap.value).length > 0
   );
 });
+
 const handleBookmark = async (story: StoryResponse) => {
+  if (!userProfile.value) return;
+
   try {
     pendingBookmarks.value.add(story.story_id);
     const isCurrentlyBookmarked = bookmarkStore.isBookmarked(story.story_id);
@@ -137,7 +145,7 @@ const handleBookmark = async (story: StoryResponse) => {
       ].filter((bookmark) => bookmark.story_id !== story.story_id);
     }
 
-    toggleOptimisticBookmark(story);
+    toggleOptimisticBookmark(story, userProfile.value?.id);
 
     if (
       userBookmarkMap.value[currentPage.value].length === 0 &&

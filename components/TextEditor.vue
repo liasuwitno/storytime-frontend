@@ -1,5 +1,11 @@
 <template>
-  <div>
+  <div
+    :class="
+      cn({
+        'opacity-50 cursor-not-allowed': props.disabled,
+      })
+    "
+  >
     <section
       v-if="editor"
       class="buttons text-gray-700 flex items-center flex-wrap gap-x-4 border-t border-l border-r border-gray-400 p-4"
@@ -97,7 +103,7 @@
         <RedoIcon :size="20" />
       </button>
     </section>
-    <EditorContent :editor="editor" />
+    <EditorContent :editor="editor" :disabled="props.disabled" />
   </div>
 </template>
 <script setup>
@@ -120,6 +126,10 @@ import {
 
 const props = defineProps({
   modelValue: String,
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -127,15 +137,34 @@ const emit = defineEmits(["update:modelValue"]);
 const editor = useEditor({
   content: props.modelValue,
   onUpdate: ({ editor }) => {
-    emit("update:modelValue", editor.getHTML());
+    const content = editor.getHTML();
+    if (content !== props.modelValue) {
+      emit("update:modelValue", content);
+    }
   },
   extensions: [StarterKit, Underline],
   editorProps: {
     attributes: {
-      class:
-        "border border-gray-400 p-4 min-h-[12rem] max-h-[12rem] overflow-y-auto outline-none prose max-w-none",
+      class: `border border-gray-400 p-4 min-h-[12rem] max-h-[12rem] overflow-y-auto outline-none prose max-w-none ${
+        props.disabled ? "opacity-50 cursor-not-allowed" : ""
+      }`,
     },
   },
+  editable: !props.disabled,
+});
+
+watch(
+  () => props.modelValue,
+  (newContent) => {
+    if (editor.value && newContent !== editor.value.getHTML()) {
+      editor.value.commands.setContent(newContent, false);
+    }
+  },
+  { immediate: true }
+);
+
+defineExpose({
+  editor,
 });
 </script>
 <style lang=""></style>

@@ -198,6 +198,8 @@ const { createStory } = useStoryService();
 const { uploadFileSingleLink } = useUploadFileService();
 const { getCategories: getAllCategories } = useCategoryService();
 
+const { showToast } = useCustomToastify();
+
 const formStoryData = reactive({
   title: "",
   body: "",
@@ -257,8 +259,16 @@ const submitStory = async (): Promise<void> => {
     const response = await createStory(payload);
 
     if (response?.code === CODE_CREATED) {
-      alert("Story created successfully");
-      navigateTo("/profile");
+      showToast("✅ Story created successfully", {
+        autoClose: 3000,
+        position: "top-center",
+        redirectPath: "/profile",
+      });
+    } else {
+      showToast("❌ Story created failed", {
+        autoClose: 3000,
+        position: "top-center",
+      });
     }
 
     isSubmitting.value = false;

@@ -1,6 +1,6 @@
 <template>
   <div class="flex h-full flex-col cursor-pointer justify-between">
-    <figure class="relative group h-full overflow-hidden rounded-lg">
+    <figure class="relative h-full overflow-hidden rounded-lg group">
       <template v-for="(button, index) in enabledButtons" :key="button">
         <UiButton
           size="icon"
@@ -37,6 +37,7 @@
         class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
       />
     </figure>
+
     <NuxtLink :to="url" class="py-2">
       <div class="content">
         <h3
@@ -77,12 +78,7 @@
           </p>
         </div>
         <div
-          :class="
-            cn('flex items-center overflow-hidden', {
-              'justify-end': !hasCategory,
-              'justify-evenly': hasCategory,
-            })
-          "
+          :class="cn('flex items-center justify-end space-x-2 overflow-hidden')"
         >
           <span
             :class="
@@ -173,13 +169,14 @@ const getButtonClasses = (buttonType: string, index: number) => {
   };
 
   return cn(
-    "bg-asparagus hover:bg-asparagus/90 absolute bottom-5 z-50 transform translate-y-full transition-all duration-300",
-    "disabled:pointer-events-none disabled:opacity-50",
+    "bg-asparagus hover:bg-asparagus/90 absolute bottom-5 z-50 transition-all duration-300",
+    // "disabled:pointer-events-none disabled:opacity-50 transform translate-y-full",
     getPosition(),
     {
-      "opacity-0 visibility-hidden group-hover:translate-y-0 group-hover:opacity-100 group-hover:visibility-visible":
-        buttonType === "bookmark" ? !props.bookmarked?.is_bookmark : true,
-      "bottom-16 border-2 border-white":
+      // "opacity-0 visibility-hidden group-hover:translate-y-0 group-hover:opacity-100 group-hover:visibility-visible":
+      //   buttonType === "bookmark" ? !props.bookmarked?.is_bookmark : true,
+      // "bottom-16 border-2 border-white":
+      "bottom-5 border-2 border-white":
         buttonType === "bookmark" && props.bookmarked?.is_bookmark,
     }
   );
@@ -207,12 +204,6 @@ const handleButtonClick = (buttonType: string, event: MouseEvent) => {
 <style scoped>
 .card {
   @apply bg-white rounded-lg overflow-hidden;
-}
-.grid-card-large {
-  @apply min-h-[685px];
-}
-.grid-card-small {
-  @apply min-h-[240px];
 }
 figure {
   @apply relative w-full;

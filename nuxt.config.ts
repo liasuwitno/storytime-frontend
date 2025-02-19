@@ -15,12 +15,13 @@ export default defineNuxtConfig({
       NUXT_PUSHER_APP_CHANNEL_NAME: process.env.NUXT_PUSHER_APP_CHANNEL_NAME,
       NUXT_PUSHER_APP_EVENT_NAME: process.env.NUXT_PUSHER_APP_EVENT_NAME,
     },
+    NUXT_AUTH_SECRET: process.env.NUXT_AUTH_SECRET,
   },
   build: {
     transpile: ["pinia"],
   },
   plugins: ["~/plugins/request"],
-  modules: ["@pinia/nuxt", "@nuxt/image"],
+  modules: ["@pinia/nuxt", "@nuxt/image", "nuxt-toastify"],
   css: ["~/styles/globals.css"],
   pinia: {
     storesDirs: ["~/store/**"],
@@ -34,7 +35,9 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
-  generate: {
-    routes: ["/404"],
+  toastify: {
+    autoClose: 4000,
+    position: "top-center",
+    theme: "dark",
   },
 });

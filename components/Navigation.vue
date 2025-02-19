@@ -61,7 +61,7 @@
                 <NuxtLink
                   v-for="(item, index) in messages"
                   :key="index"
-                  :to="`/stories/${item?.slug}`"
+                  :to="`/stories/detail/${item?.slug}`"
                   :class="cn('p-1 border-b overflow-hidden w-full')"
                 >
                   <h4
@@ -197,6 +197,16 @@
                             )
                           "
                         >
+                          <LoaderCircle
+                            v-if="isLoadingLogout"
+                            :size="16"
+                            :stroke-width="3"
+                            :class="
+                              cn({
+                                'animate-spin': isLoadingLogout,
+                              })
+                            "
+                          />
                           {{ isLoadingLogout ? "Logging out..." : "Logout" }}
                         </UiButton>
                       </UiDialogFooter>
@@ -242,7 +252,7 @@
 import { navigateTo } from "#app";
 
 import { cn } from "@/utils";
-import { Bell, ChevronDown } from "lucide-vue-next";
+import { Bell, ChevronDown, LoaderCircle } from "lucide-vue-next";
 import { UiPopover } from "#components";
 import { usePusherNotifications } from "~/composables/services/useNotifications";
 import { useAuthenticationStore } from "~/stores/auth";

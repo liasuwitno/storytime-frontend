@@ -16,6 +16,7 @@ export interface StoryResponse {
     identifier: string;
   }>;
   is_bookmark: boolean;
+  category_id: number;
   category_name: string;
   created_at: string;
 }
@@ -49,6 +50,12 @@ export interface LandingStoryResponse {
   stories: StoryResponse[];
 }
 
+export interface ConfigsParams {
+  sort: string;
+  per_page: number;
+  search: string;
+}
+
 interface ReturnUseStoryService {
   getLandingStories: () => Promise<ApiResponse<LandingStoryResponse[]>>;
   getStoryBySlug: (slug: string) => Promise<ApiResponse<StoryResponseDetail>>;
@@ -67,6 +74,10 @@ interface ReturnUseStoryService {
     perPage: number;
   }) => Promise<ApiResponse<StoryBookmarkResponse>>;
   getLatestStories: () => Promise<ApiResponse<StoryResponse[]>>;
+  getSpesificStories: (
+    category: string,
+    params: ConfigsParams
+  ) => Promise<ApiResponse<StoryPersonalResponse>>;
 }
 
 export const useStoryService = (): ReturnUseStoryService => {
@@ -77,6 +88,21 @@ export const useStoryService = (): ReturnUseStoryService => {
   > => {
     const response = await $request.get<ApiResponse<LandingStoryResponse[]>>({
       url: "/story-categories",
+    });
+
+    return response;
+  };
+
+  const getSpesificStories = async (
+    category: string,
+    params: ConfigsParams
+  ): Promise<ApiResponse<StoryPersonalResponse>> => {
+    const url = params
+      ? `/spesific-stories/${category}?sort=${params.sort}&per_page=${params.per_page}&search=${params.search}`
+      : `/spesific-stories/${category}`;
+
+    const response = await $request.get<ApiResponse<StoryPersonalResponse>>({
+      url,
     });
 
     return response;
@@ -172,6 +198,7 @@ export const useStoryService = (): ReturnUseStoryService => {
     deleteStory,
     getUserStories,
     getUserBookmarks,
+    getSpesificStories,
     getLatestStories,
   };
 };

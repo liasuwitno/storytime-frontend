@@ -43,7 +43,7 @@
         <section v-for="(story, index) in stories" :key="story?.category_name">
           <UiSectionBar
             :title="story?.category_name ?? '-'"
-            redirectLink="/"
+            :redirectLink="`/stories/categories/${story?.category_name?.toLowerCase()}`"
             :isShowExploreMore="story?.stories?.length > 0"
           />
 
@@ -107,9 +107,11 @@ import {
   type LandingStoryResponse,
   type StoryResponse,
 } from "~/composables/services/useStoryService";
+import { useAuthenticationStore } from "~/stores/auth";
 import { useBookmarkStore } from "~/stores/bookmark";
 
 const bookmarkStore = useBookmarkStore();
+const authStore = useAuthenticationStore();
 
 const ACTIVE_CATEGORIES = ["Comedy", "Romance", "Horror"];
 const STORIES_PER_CATEGORY = 3;
@@ -126,11 +128,24 @@ const { getCategories: getAllCategories } = useCategoryService();
 
 const { toggleOptimisticBookmark, pendingBookmarks, handleBookmarkError } =
   useBookmark();
+const { showToast } = useCustomToastify();
+
+const userProfile = computed(() => authStore.userProfile);
 
 const handleBookmark = async (story: StoryResponse) => {
+  if (!userProfile.value) {
+    showToast("❌ You must be logged in to bookmark stories", {
+      autoClose: 2500,
+      position: "top-center",
+      redirectPath: "/login",
+    });
+
+    return;
+  }
+
   try {
     pendingBookmarks.value.add(story.story_id);
-    toggleOptimisticBookmark(story);
+    toggleOptimisticBookmark(story, userProfile.value?.id);
   } catch (error) {
     console.error("[BOOKMARK_ERROR]:", error);
     handleBookmarkError(story.story_id);

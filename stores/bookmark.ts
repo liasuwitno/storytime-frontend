@@ -44,28 +44,30 @@ export const useBookmarkStore = defineStore("bookmark", {
         this.setLoadingState(payload.story_id, true);
         const isCurrentlyBookmarked = this.isBookmarked(payload.story_id);
 
-        if (isCurrentlyBookmarked) {
-          this.bookmarkedStories = this.bookmarkedStories.filter(
-            (story) => story.story_id !== payload.story_id
-          );
-        } else {
-          this.bookmarkedStories.push(payload);
-        }
-
         const response = await addBookmark({
           story_id: payload.story_id,
           user_id: payload.user_id,
         });
 
-        if (response.status !== "success") {
+        if (response.status === "success") {
           if (isCurrentlyBookmarked) {
-            this.bookmarkedStories.push(payload);
-          } else {
             this.bookmarkedStories = this.bookmarkedStories.filter(
               (story) => story.story_id !== payload.story_id
             );
+          } else {
+            this.bookmarkedStories.push(payload);
           }
         }
+
+        // if (response.status !== "success") {
+        //   if (isCurrentlyBookmarked) {
+        //     this.bookmarkedStories.push(payload);
+        //   } else {
+        //     this.bookmarkedStories = this.bookmarkedStories.filter(
+        //       (story) => story.story_id !== payload.story_id
+        //     );
+        //   }
+        // }
       } catch (error) {
         console.error("[BOOKMARK_ERROR]:", error);
         throw error;

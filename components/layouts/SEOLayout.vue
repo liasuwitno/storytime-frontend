@@ -3,7 +3,7 @@
 </template>
 <script setup lang="ts">
 interface AppLayoutProps {
-  title?: string;
+  title?: string | any;
   description?: string;
   url?: string;
 }

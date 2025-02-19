@@ -35,7 +35,7 @@
       <UiInput
         type="text"
         placeholder="Search Story"
-        :inputClass="cn('py-6 px-4 font-medium text-sm')"
+        :inputClass="cn('py-6 px-4 font-medium text-base')"
         :iconRight="Search"
         v-model="formData.search"
         @keyup.enter="handleSearch"

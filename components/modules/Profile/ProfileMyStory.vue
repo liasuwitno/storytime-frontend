@@ -11,16 +11,15 @@
         isMultipleMethod
         variant="list"
         :story="story"
-        :url="`/stories/${story.slug}`"
+        :url="`/stories/detail/${story.slug}`"
         :enabled-buttons="['delete', 'update']"
         :bookmarked="{
-          is_bookmark: story.is_bookmark,
+          is_bookmark: false,
           is_loading: false,
         }"
         :actions="{
-          bookmark: () => {},
-          delete: () => {},
-          update: () => {},
+          update: () => handleOpenEditStory(story.slug),
+          delete: () => handleOpenDeleteDialog(story),
         }"
       />
     </div>
@@ -43,13 +42,13 @@
               :value="item.value"
               as-child
             >
-              <Button
+              <UiButton
                 class="w-10 h-10 p-0"
                 :variant="item.value === currentPage ? 'default' : 'outline'"
                 @click="changePage(item.value)"
               >
                 {{ item.value }}
-              </Button>
+              </UiButton>
             </PaginationListItem>
             <PaginationEllipsis v-else />
           </template>
@@ -61,6 +60,68 @@
         </PaginationList>
       </Pagination>
     </div>
+
+    <UiDialog
+      :open="!!selectedStory"
+      @update:open="handleDialogChange"
+      class="overflow-y-auto"
+    >
+      <UiDialogContent
+        class="sm:max-w-[400px]"
+        :class="{ 'overflow-visible': !!selectedStory }"
+      >
+        <UiDialogHeader>
+          <UiDialogTitle
+            :class="cn('font-semibold text-3xl text-center', 'mb-1')"
+          >
+            Delete Story
+          </UiDialogTitle>
+          <UiDialogDescription :class="cn('text-center text-base font-medium')">
+            Are you sure you want to delete
+            <span class="font-semibold text-raisin-black"
+              >"{{ selectedStory?.title }}"</span
+            >? This action cannot be undone.
+          </UiDialogDescription>
+        </UiDialogHeader>
+
+        <UiDialogFooter class="mx-auto space-x-2 mt-4">
+          <UiDialogClose asChild>
+            <UiButton
+              type="button"
+              variant="outline"
+              size="lg"
+              :disabled="isLoadingDelete"
+              :class="
+                cn(
+                  'text-olive-drab border-olive-drab border-2 text-base',
+                  'hover:text-white hover:bg-olive-drab'
+                )
+              "
+            >
+              Cancel
+            </UiButton>
+          </UiDialogClose>
+
+          <UiButton
+            type="button"
+            variant="default"
+            size="lg"
+            @click="handleDeleteStory"
+            :disabled="isLoadingDelete"
+            :class="cn('bg-olive-drab text-base', 'hover:bg-olive-drab/90')"
+          >
+            <LoaderCircle
+              v-if="isLoadingDelete"
+              :size="16"
+              :stroke-width="3"
+              :class="cn({ 'animate-spin': isLoadingDelete })"
+            />
+
+            {{ isLoadingDelete ? "Deleting..." : "Delete" }}
+          </UiButton>
+        </UiDialogFooter>
+      </UiDialogContent>
+    </UiDialog>
   </template>
 
   <template v-else>
@@ -95,18 +156,85 @@ import {
   PaginationNext,
   PaginationPrev,
 } from "@/components/ui/pagination";
-import { Button } from "@/components/ui/button";
 import {
   useStoryService,
   type StoryPersonalResponse,
+  type StoryResponse,
 } from "~/composables/services/useStoryService";
-import { watchEffect, ref, computed } from "vue";
 
-const { getUserStories } = useStoryService();
+const { getUserStories, deleteStory } = useStoryService();
+const { showToast } = useCustomToastify();
+
+const isLoadingDelete = ref<boolean>(false);
+const selectedStory = ref<StoryResponse | null>(null);
+
+const handleOpenEditStory = (slug: string) => {
+  navigateTo(`/profile/story/${slug}/edit`);
+};
+
+const handleOpenDeleteDialog = (story: StoryResponse | null) => {
+  selectedStory.value = story;
+};
+
+const handleDialogChange = (isOpen: boolean) => {
+  if (!isOpen) {
+    selectedStory.value = null;
+  }
+};
+
+const handleDeleteStory = async () => {
+  if (!selectedStory.value) return;
+
+  try {
+    isLoadingDelete.value = true;
+
+    const response = await deleteStory(selectedStory.value.story_id);
+
+    if (response.code === 200) {
+      if (userStoriesMap.value[currentPage.value]) {
+        userStoriesMap.value[currentPage.value] = userStoriesMap.value[
+          currentPage.value
+        ].filter((story) => story.story_id !== selectedStory.value?.story_id);
+      }
+
+      if (userStoriesMap.value[currentPage.value].length === 0) {
+        if (currentPage.value > 1) {
+          currentPage.value--;
+        }
+
+        totalPages.value = Math.max(1, totalPages.value - 1);
+      }
+
+      const currentCache = { ...userStoriesMap.value };
+      Object.keys(currentCache).forEach((page) => {
+        if (Number(page) > currentPage.value) {
+          delete userStoriesMap.value[Number(page)];
+        }
+      });
+
+      showToast("✅ Story deleted successfully", {
+        autoClose: 3000,
+        position: "top-center",
+      });
+
+      selectedStory.value = null;
+    } else {
+      showToast("❌ Story deleted failed", {
+        autoClose: 3000,
+        position: "top-center",
+      });
+    }
+
+    isLoadingDelete.value = false;
+  } catch (error) {
+    console.error("[STORY DELETE]:", error);
+    isLoadingDelete.value = false;
+  }
+};
 
 const currentPage = ref<number>(1);
 const totalPages = ref<number>(1);
-const perPage = ref<number>(5);
+const perPage = ref<number>(4);
 const isLoading = ref<boolean>(false);
 const userStoriesMap = ref<Record<number, StoryPersonalResponse["stories"]>>(
   {}

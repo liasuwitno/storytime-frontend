@@ -254,6 +254,7 @@ const store = useAuthenticationStore();
 const profileUser = computed(() => store.userProfile);
 
 const { updateProfile } = useAuthService();
+const { showToast } = useCustomToastify();
 
 const isDialogOpen = ref<boolean>(false);
 const isChangePicture = ref<boolean>(false);
@@ -314,6 +315,16 @@ const submitProfile = async (): Promise<void> => {
         isDialogOpen.value = false;
         isChangePicture.value = false;
       }
+
+      showToast("✅ Successfully edit your profile", {
+        autoClose: 3000,
+        position: "top-center",
+      });
+    } else {
+      showToast("❌ Successfully edit your profile", {
+        autoClose: 3000,
+        position: "top-center",
+      });
     }
 
     isSubmitting.value = false;
