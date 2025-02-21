@@ -105,6 +105,7 @@
                         </UiButton>
                       </div>
                     </div>
+
                     <FilepondRounded v-else v-model="formData.newAvatar" />
 
                     <UiInput
@@ -274,9 +275,11 @@ const formData = ref({
 const getPayload = (): UpdateProfilePayload => {
   return {
     fullname: formData.value.fullname,
-    avatar: isChangePicture.value
-      ? formData.value.newAvatar
-      : formData.value.avatar,
+    avatar: profileUser.value?.avatar
+      ? isChangePicture.value
+        ? formData.value.newAvatar
+        : profileUser.value.avatar
+      : formData.value.newAvatar,
     bio: formData.value.bio,
     old_password: formData.value.oldPassword,
     new_password: formData.value.newPassword,

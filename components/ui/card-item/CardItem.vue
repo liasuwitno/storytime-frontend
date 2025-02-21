@@ -56,8 +56,18 @@
           {{ removeTagElements(story?.content) ?? "..." }}
         </p>
       </div>
-      <div class="grid grid-cols-[1fr_60%] gap-2 mt-3 px-1">
-        <div class="flex items-center space-x-1.5 overflow-hidden">
+      <div
+        :class="
+          cn('grid gap-2 mt-3 px-1', {
+            'grid-cols-[1fr_60%]': !isPrivateStory,
+            'grid-cols-1': isPrivateStory,
+          })
+        "
+      >
+        <div
+          v-if="!isPrivateStory"
+          class="flex items-center space-x-1.5 overflow-hidden"
+        >
           <NuxtImg
             :src="
               story?.author?.avatar ??
@@ -77,8 +87,14 @@
             {{ story?.author?.name ?? "-" }}
           </p>
         </div>
+
         <div
-          :class="cn('flex items-center justify-end space-x-2 overflow-hidden')"
+          :class="
+            cn('flex items-center space-x-2 overflow-hidden', {
+              'justify-end': !isPrivateStory,
+              'justify-between': isPrivateStory,
+            })
+          "
         >
           <span
             :class="
@@ -169,7 +185,7 @@ const getButtonClasses = (buttonType: string, index: number) => {
   };
 
   return cn(
-    "bg-asparagus hover:bg-asparagus/90 absolute bottom-5 z-50 transition-all duration-300",
+    "bg-asparagus hover:bg-asparagus/90 absolute bottom-5 z-[25] transition-all duration-300",
     // "disabled:pointer-events-none disabled:opacity-50 transform translate-y-full",
     getPosition(),
     {

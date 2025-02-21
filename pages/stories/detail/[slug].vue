@@ -38,6 +38,18 @@
             :users="storyDetail?.story?.author"
             :createdAt="storyDetail?.story?.created_at ?? ''"
             :title="storyDetail?.story?.title ?? ''"
+            :story="{
+              data: storyDetail?.story,
+              is_bookmark: bookmarkStore.isBookmarked(
+                storyDetail?.story?.story_id as string
+              ),
+              is_loading: bookmarkStore.isLoading(
+                storyDetail?.story?.story_id as string
+              ),
+            }"
+            :bookmarked="{
+              action: handleBookmark,
+            }"
           />
         </section>
 
@@ -174,12 +186,15 @@ import {
   type StoryResponseDetail,
 } from "~/composables/services/useStoryService";
 import { useAuthenticationStore } from "~/stores/auth";
+import { useBookmarkStore } from "~/stores/bookmark";
 import { changeToNormalText } from "~/utils";
 
 const { params } = useRoute();
 const { getStoryBySlug } = useStoryService();
 
 const authStore = useAuthenticationStore();
+const bookmarkStore = useBookmarkStore();
+
 const { toggleOptimisticBookmark, pendingBookmarks, handleBookmarkError } =
   useBookmark();
 const { showToast } = useCustomToastify();
@@ -251,6 +266,10 @@ const fetchDetailStory = async (slug: string): Promise<void> => {
 
     if (response?.code === CODE_OK) {
       const data = response?.data as StoryResponseDetail;
+
+      const checkIsBookmark = data.story?.is_bookmark ?? false;
+      bookmarkStore.initializeBookmarks(checkIsBookmark ? [data] : []);
+
       storyDetail.value = data;
     }
 

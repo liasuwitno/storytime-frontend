@@ -1,7 +1,7 @@
 <template>
   <LayoutsMultipleStoryLayout
     page-title="Search Results"
-    :heading-title="`${stories.length} Search results for '${searchQuery}'`"
+    :heading-title="`${stories.length} search results for '${searchQuery}'`"
     variant="searching"
   >
     <div :class="cn('grid grid-cols-1 gap-4', 'md:grid-cols-[2fr_1fr]')">
@@ -86,7 +86,6 @@
     <template v-else>
       <StoryModuleLayout
         variant="list"
-        :is-show-category="true"
         :stories="stories"
         :bookmarked="{
           action: handleBookmark,
@@ -150,6 +149,7 @@ import {
   type ConfigsParams,
   type StoryResponse,
 } from "~/composables/services/useStoryService";
+import { useBookmarkStore } from "~/stores/bookmark";
 
 const route = useRoute();
 const router = useRouter();
@@ -169,6 +169,7 @@ if (process.server) {
   }
 }
 
+const bookmarkStore = useBookmarkStore();
 const authStore = useAuthenticationStore();
 
 const userProfile = computed(() => authStore.userProfile);
@@ -202,6 +203,17 @@ const getStories = async ({
 
     if (response.code === CODE_OK) {
       const data = response.data;
+
+      const initializeBookmarks = data.stories
+        .map((story) => ({
+          story_id: story.story_id,
+          user_id: story.author.user_id,
+          is_bookmark: story.is_bookmark,
+        }))
+        ?.filter((bookmark) => bookmark.is_bookmark);
+
+      bookmarkStore.initializeBookmarks(initializeBookmarks);
+
       stories.value = data?.stories ?? [];
       totalPages.value = data.pagination.total_pages;
     }
@@ -237,33 +249,18 @@ const handleBookmark = async (story: StoryResponse) => {
 const changePage = (page: number) => {
   if (page !== currentPage.value) {
     currentPage.value = page;
-    getStories({
-      search: searchQuery.value as string,
-      sort: formData.sort,
-      per_page: formData.per_page,
-    });
   }
 };
 
 const prevPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--;
-    getStories({
-      search: searchQuery.value as string,
-      sort: formData.sort,
-      per_page: formData.per_page,
-    });
   }
 };
 
 const nextPage = () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++;
-    getStories({
-      search: searchQuery.value as string,
-      sort: formData.sort,
-      per_page: formData.per_page,
-    });
   }
 };
 
@@ -279,12 +276,6 @@ const debouncedSearch = useDebounceFn(() => {
       sort: formData.sort,
     },
   });
-
-  getStories({
-    search: formData.search,
-    sort: formData.sort,
-    per_page: formData.per_page,
-  });
 }, 500);
 
 const handleSearch = () => {
@@ -299,12 +290,6 @@ const handleSortChange = (newSort: string) => {
       sort: newSort,
     },
   });
-
-  getStories({
-    search: searchQuery.value as string,
-    sort: newSort,
-    per_page: formData.per_page,
-  });
 };
 
 onMounted(() => {
@@ -312,12 +297,6 @@ onMounted(() => {
     formData.sort = (route.query.sort as string) || "newest";
     formData.search = (route.query.search as string) || "";
   }
-
-  getStories({
-    search: searchQuery.value as string,
-    per_page: formData.per_page,
-    sort: formData.sort,
-  });
 });
 
 watch(

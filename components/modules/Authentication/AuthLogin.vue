@@ -45,11 +45,7 @@
           :hasError="!!errorMessage"
           v-model="formLoginData.password"
           :disabled="isLoading"
-          :inputMessage="
-            !!errorMessage
-              ? errorMessage
-              : 'Password must be at least 8 characters long'
-          "
+          :inputMessage="errorMessage ?? ''"
           isRequired
         />
       </Field>

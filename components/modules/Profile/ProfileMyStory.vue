@@ -12,14 +12,15 @@
         variant="list"
         :story="story"
         :url="`/stories/detail/${story.slug}`"
-        :enabled-buttons="['delete', 'update']"
+        :enabled-buttons="['bookmark', 'delete', 'update']"
         :bookmarked="{
-          is_bookmark: false,
-          is_loading: false,
+          is_bookmark: bookmarkStore.isBookmarked(story.story_id),
+          is_loading: bookmarkStore.isLoading(story.story_id),
         }"
         :actions="{
           update: () => handleOpenEditStory(story.slug),
           delete: () => handleOpenDeleteDialog(story),
+          bookmark: () => handleBookmark(story),
         }"
       />
     </div>
@@ -161,12 +162,60 @@ import {
   type StoryPersonalResponse,
   type StoryResponse,
 } from "~/composables/services/useStoryService";
+import { useBookmarkStore } from "~/stores/bookmark";
+import { useAuthenticationStore } from "~/stores/auth";
+
+const bookmarkStore = useBookmarkStore();
+const authStore = useAuthenticationStore();
 
 const { getUserStories, deleteStory } = useStoryService();
 const { showToast } = useCustomToastify();
 
+const { toggleOptimisticBookmark, pendingBookmarks, handleBookmarkError } =
+  useBookmark();
+
 const isLoadingDelete = ref<boolean>(false);
 const selectedStory = ref<StoryResponse | null>(null);
+
+const perPage = ref<number>(4);
+const totalPages = ref<number>(1);
+const currentPage = ref<number>(1);
+const isLoading = ref<boolean>(false);
+const userStoriesMap = ref<Record<number, StoryPersonalResponse["stories"]>>(
+  {}
+);
+
+const userProfile = computed(() => authStore.userProfile);
+
+const userStories = computed(
+  () => userStoriesMap.value[currentPage.value] || []
+);
+
+const hasStories = computed(
+  () => !isLoading.value && userStories.value.length > 0
+);
+
+const handleBookmark = async (story: StoryResponse) => {
+  if (!userProfile.value) {
+    showToast("❌ You must be logged in to bookmark stories", {
+      autoClose: 2500,
+      position: "top-center",
+      redirectPath: "/login",
+    });
+
+    return;
+  }
+
+  try {
+    pendingBookmarks.value.add(story.story_id);
+    toggleOptimisticBookmark(story, userProfile.value?.id);
+  } catch (error) {
+    console.error("[BOOKMARK_ERROR]:", error);
+    handleBookmarkError(story.story_id);
+  } finally {
+    pendingBookmarks.value.delete(story.story_id);
+  }
+};
 
 const handleOpenEditStory = (slug: string) => {
   navigateTo(`/profile/story/${slug}/edit`);
@@ -232,22 +281,6 @@ const handleDeleteStory = async () => {
   }
 };
 
-const currentPage = ref<number>(1);
-const totalPages = ref<number>(1);
-const perPage = ref<number>(4);
-const isLoading = ref<boolean>(false);
-const userStoriesMap = ref<Record<number, StoryPersonalResponse["stories"]>>(
-  {}
-);
-
-const userStories = computed(
-  () => userStoriesMap.value[currentPage.value] || []
-);
-
-const hasStories = computed(
-  () => !isLoading.value && userStories.value.length > 0
-);
-
 const fetchUserStories = async (page: number): Promise<void> => {
   if (userStoriesMap.value[page]) {
     console.log(`Cache hit for page ${page}`);
@@ -260,6 +293,17 @@ const fetchUserStories = async (page: number): Promise<void> => {
 
     if (response?.code === 200) {
       const data = response.data as StoryPersonalResponse;
+
+      const initializeBookmarks = data.stories
+        .map((story) => ({
+          story_id: story.story_id,
+          user_id: story.author.user_id,
+          is_bookmark: story.is_bookmark,
+        }))
+        ?.filter((bookmark) => bookmark.is_bookmark);
+
+      bookmarkStore.initializeBookmarks(initializeBookmarks);
+
       userStoriesMap.value[page] = data.stories ?? [];
       totalPages.value = data.pagination.total_pages;
     } else {

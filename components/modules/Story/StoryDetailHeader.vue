@@ -60,16 +60,32 @@
         :class="
           cn('bg-asparagus hover:bg-asparagus/90 transition-all duration-300')
         "
+        :disabled="story?.is_loading"
+        @click="bookmarked?.action(props?.story?.data as StoryResponse)"
       >
-        <Bookmark class="h-28" />
+        <LoaderCircle
+          v-if="story?.is_loading"
+          :size="16"
+          :stroke-width="3"
+          :class="cn({ 'animate-spin': story?.is_loading })"
+        />
+
+        <Bookmark
+          v-else
+          class="h-28"
+          :fill="story?.is_bookmark ? '#fff' : 'none'"
+        />
       </UiButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Bookmark } from "lucide-vue-next";
-import type { StoryResponseDetail } from "~/composables/services/useStoryService";
+import { Bookmark, LoaderCircle } from "lucide-vue-next";
+import type {
+  StoryResponse,
+  StoryResponseDetail,
+} from "~/composables/services/useStoryService";
 
 const isLoading = ref<boolean>(true);
 
@@ -77,6 +93,14 @@ const props = defineProps<{
   users: StoryResponseDetail["story"]["author"] | undefined;
   createdAt: string;
   title: string;
+  story?: {
+    data: StoryResponse | undefined;
+    is_bookmark: boolean;
+    is_loading: boolean;
+  };
+  bookmarked?: {
+    action: (story: StoryResponse) => void;
+  };
 }>();
 
 watchEffect(() => {

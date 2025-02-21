@@ -123,7 +123,7 @@
         :is-show-category="true"
         :stories="stories"
         :bookmarked="{
-          action: () => {},
+          action: handleBookmark,
         }"
       />
 
@@ -191,8 +191,14 @@ import {
   type StoryResponse,
 } from "~/composables/services/useStoryService";
 
+import { useAuthenticationStore } from "~/stores/auth";
+import { useBookmarkStore } from "~/stores/bookmark";
+
 const route = useRoute();
 const router = useRouter();
+
+const bookmarkStore = useBookmarkStore();
+const authStore = useAuthenticationStore();
 
 const formData = reactive({
   search: "",
@@ -214,7 +220,35 @@ const categories = ref<CategoriesResponse[]>([]);
 const { getSpesificStories } = useStoryService();
 const { getCategories: getAllCategories } = useCategoryService();
 
+const { toggleOptimisticBookmark, pendingBookmarks, handleBookmarkError } =
+  useBookmark();
+const { showToast } = useCustomToastify();
+
+const userProfile = computed(() => authStore.userProfile);
+
 const params = computed(() => route.params).value as Record<string, string>;
+
+const handleBookmark = async (story: StoryResponse) => {
+  if (!userProfile.value) {
+    showToast("❌ You must be logged in to bookmark stories", {
+      autoClose: 2500,
+      position: "top-center",
+      redirectPath: "/login",
+    });
+
+    return;
+  }
+
+  try {
+    pendingBookmarks.value.add(story.story_id);
+    toggleOptimisticBookmark(story, userProfile.value?.id);
+  } catch (error) {
+    console.error("[BOOKMARK_ERROR]:", error);
+    handleBookmarkError(story.story_id);
+  } finally {
+    pendingBookmarks.value.delete(story.story_id);
+  }
+};
 
 const getCategories = async (): Promise<void> => {
   try {
@@ -258,6 +292,16 @@ const getStories = async ({
 
     if (response.code === CODE_OK) {
       const data = response.data;
+
+      const initializeBookmarks = data.stories
+        .map((story) => ({
+          story_id: story.story_id,
+          user_id: story.author.user_id,
+          is_bookmark: story.is_bookmark,
+        }))
+        ?.filter((bookmark) => bookmark.is_bookmark);
+
+      bookmarkStore.initializeBookmarks(initializeBookmarks);
 
       stories.value = data?.stories ?? [];
       totalPages.value = data.pagination.total_pages;
@@ -322,13 +366,6 @@ const debouncedSearch = useDebounceFn(() => {
     path: route.path,
     query,
   });
-
-  getStories({
-    category: params?.category as string,
-    per_page: formData.per_page,
-    sort: formData.sort,
-    search: formData.search,
-  });
 }, 500);
 
 const handleSearch = () => {
@@ -347,13 +384,6 @@ const handleSortChange = (newSort: string) => {
   router.push({
     path: route.path,
     query,
-  });
-
-  getStories({
-    category: params?.category as string,
-    per_page: formData.per_page,
-    sort: newSort,
-    search: formData.search,
   });
 };
 
@@ -375,13 +405,6 @@ onMounted(() => {
   if (!categories.value.length) {
     getCategories();
   }
-
-  getStories({
-    category: params?.category as string,
-    per_page: formData.per_page,
-    sort: formData.sort,
-    search: formData.search,
-  });
 });
 
 watch(
