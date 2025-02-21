@@ -268,7 +268,7 @@ const fetchDetailStory = async (slug: string): Promise<void> => {
       const data = response?.data as StoryResponseDetail;
 
       const checkIsBookmark = data.story?.is_bookmark ?? false;
-      bookmarkStore.initializeBookmarks(checkIsBookmark ? [data] : []);
+      bookmarkStore.initializeBookmarks(checkIsBookmark ? [data.story] : []);
 
       storyDetail.value = data;
     }
